@@ -1,93 +1,65 @@
 # UCMe
 
-A college-specific dating app built with the MERN stack (MongoDB, Express, React, Node.js).
+A college-specific dating app built with FastAPI and PostgreSQL.
 
 ## Project Structure
 
 ```
 ucme/
-├── client/             # React frontend
-│   ├── public/         # Static files
-│   ├── src/
-│   │   ├── components/ # Reusable UI components
-│   │   ├── pages/      # Page components
-│   │   │   ├── Signup.js
-│   │   │   ├── Login.js
-│   │   │   └── Home.js
-│   │   ├── App.js      # Main App component
-│   │   └── index.js    # React entry point
-│   ├── tailwind.config.js
-│   └── package.json
-├── server/             # Express backend
-│   ├── config/
-│   │   └── db.js       # MongoDB connection
+├── backend/            # FastAPI backend
+│   ├── main.py         # FastAPI app entry point
+│   ├── database.py     # SQLAlchemy DB connection
 │   ├── models/
-│   │   └── User.js     # User model
+│   │   └── user.py     # User SQLAlchemy model
+│   ├── schemas/
+│   │   └── user.py     # Pydantic schemas
 │   ├── routes/
-│   │   └── auth.js     # Authentication routes
-│   ├── controllers/    # Route controllers
-│   ├── index.js        # Express server
-│   └── package.json
-├── .env.example        # Environment variables template
+│   │   └── auth.py     # Auth endpoints
+│   ├── utils/
+│   │   └── auth.py     # Password hashing, JWT
+│   ├── requirements.txt
+│   └── .env
 ├── .gitignore
 └── README.md
 ```
 
 ## Tech Stack
 
-- **Frontend**: React + Tailwind CSS + React Router
-- **Backend**: Node.js + Express
-- **Database**: MongoDB + Mongoose ODM
-- **Authentication**: JWT + bcryptjs
+- **Backend**: FastAPI (Python)
+- **Database**: PostgreSQL + SQLAlchemy
+- **Authentication**: JWT + bcrypt
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- MongoDB (local installation or MongoDB Atlas)
+- Python 3.8+
+- PostgreSQL database
 
-### 1. Clone and Install
+### 1. Setup Backend
 
 ```bash
-# Install server dependencies
-cd server
-npm install
-
-# Install client dependencies
-cd ../client
-npm install
+cd backend
+pip install -r requirements.txt
 ```
 
 ### 2. Environment Setup
 
 ```bash
-# Create .env file in the server directory
-cp .env.example server/.env
-
-# Edit server/.env with your MongoDB URI and JWT secret
+# Edit backend/.env with your database URL and JWT secret
 ```
 
-### 3. Start Development Servers
+### 3. Start Development Server
 
 ```bash
-# Terminal 1: Start backend server
-cd server
-npm run dev
-
-# Terminal 2: Start frontend
-cd client
-npm start
+cd backend
+uvicorn main:app --reload
 ```
 
-The React app will run on `http://localhost:3000` and the Express server on `http://localhost:5000`.
+The API will run on `http://localhost:8000`.
 
 ## Features (MVP)
 
-- ✅ User authentication (signup/login)
-- ✅ Responsive UI with Tailwind CSS
-- ✅ React Router navigation
-- ✅ MongoDB user storage
-- ✅ JWT-based authentication
+- 🚧 User authentication (signup/login)
 - 🚧 Profile creation and editing
 - 🚧 Swipe interface for discovering matches
 - 🚧 Chat functionality for matched users

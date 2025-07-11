@@ -1,0 +1,1 @@
+# Auth endpoints: /signup, /login 
