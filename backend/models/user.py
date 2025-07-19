@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
 from sqlalchemy.orm import relationship
 from database import base
 
@@ -15,6 +15,9 @@ class User(base):
     gender = Column(String, nullable=False)# Male, Female, Other (Specified)
     major = Column(String, nullable=False) #Major -- Self Def.
     created_at = Column(DateTime) 
+    profile_pic_url = Column(String, nullable=True)  
+    bio = Column(Text, nullable=True)
+    interests = Column(String, nullable=True) 
     
 
     
