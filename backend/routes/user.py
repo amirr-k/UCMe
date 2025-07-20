@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
@@ -12,8 +12,26 @@ validEmails = {"@ucsd.edu", "@ucdavis.edu", "@ucr.edu", "@ucla.edu", "@uci.edu"
                ,"ucsc.edu", "@ucmerced.edu", "@ucsb.edu", "@berkeley.edu"}
 
 @router.post("/signup", response_model=UserResponse)
+def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+    if not any(payload.email.endswith(domain) for domain in validEmails):
+        raise HTTPException(400, "Please enter your University of California Email Address")
+    if db.query(User).filter(User.email == payload.email).first():
+        raise HTTPException(409, "Email already registered! Proceed to login.")
+    
+    insertUser= User(
+        email=payload.email,
+        name=payload.name,
+        college=payload.college,
+        school=payload.school,
+        year=payload.year,
+        gender=payload.gender,
+        major=payload.major,
+        created_at=datetime.utcnow(),
+    )
+    db.add(insertUser)
+    db.commit()
+    db.refresh(insertUser)
+    return insertUser
+  
+@router.post("/login", response_model=UserResponse, status_code=201)
 
-#May need to change this to UserCreate...
-def create_user(user: UserBase, db: Session = Depends(get_db)):
-    new_user = ()
-    #Figure out how to verify email before creating the user.

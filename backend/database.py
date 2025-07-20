@@ -1,6 +1,6 @@
 # SQLAlchemy DB connection and session 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 import os
 from dotenv import load_dotenv
 
@@ -12,3 +12,10 @@ if not databaseUrl:
 engine = create_engine(databaseUrl)
 localSession = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 base = declarative_base()
+
+def get_db() -> Session:
+    db = localSession()
+    try:
+        yield db
+    finally:
+        db.close()
