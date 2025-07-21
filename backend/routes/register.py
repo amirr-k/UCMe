@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
-from schemas.user import UserCreate, UserResponse
+from schemas.user import UserCreate, UserResponse, EmailVerificationRequest, EmailVerificationResponse
 from datetime import datetime
 from utils.auth import generate_verification_code, store_verification_code, get_verification_code, delete_verification_code, send_verification_email
-from schemas.user import EmailVerificationRequest, EmailVerificationResponse
+from sqlalchemy.exc import IntegrityError
 
 router = APIRouter()
 
@@ -13,7 +13,7 @@ validEmails = {"@ucsd.edu", "@ucdavis.edu", "@ucr.edu", "@ucla.edu", "@uci.edu"
                ,"ucsc.edu", "@ucmerced.edu", "@ucsb.edu", "@berkeley.edu"}
 
 
-@router.post("/send-email", response_model=EmailVerificationResponse)
+@router.post("/send-verification")
 def send_verification_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
     if not any(payload.email.endswith(domain) for domain in validEmails):
         raise HTTPException(400, "Please enter your University of California Email Address")
@@ -44,13 +44,8 @@ def resend_verification_email(payload: EmailVerificationRequest, db: Session = D
     send_verification_email(payload.email, code)
     return EmailVerificationResponse(message="Verification email sent", verified=False)
 
-@router.post("/register-user", response_model=UserResponse)
+@router.post("/register", response_model=UserResponse)
 def create_user(payload: UserCreate, db: Session = Depends(get_db)):
-    if not any(payload.email.endswith(domain) for domain in validEmails):
-        raise HTTPException(400, "Please enter your University of California Email Address")
-    if db.query(User).filter(User.email == payload.email).first():
-        raise HTTPException(409, "Email already registered! Proceed to login.")
-    
     insertUser= User(
         email=payload.email,
         name=payload.name,
