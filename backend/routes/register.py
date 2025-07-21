@@ -14,21 +14,21 @@ validEmails = {"@ucsd.edu", "@ucdavis.edu", "@ucr.edu", "@ucla.edu", "@uci.edu"
 
 
 @router.post("/send-verification")
-def send_verification_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
-    if not any(payload.email.endswith(domain) for domain in validEmails):
+def send_verification_code_endpoint(email: str, db: Session = Depends(get_db)):
+    if not any(email.endswith(domain) for domain in validEmails):
         raise HTTPException(400, "Please enter your University of California Email Address")
-    if db.query(User).filter(User.email == payload.email).first():
+    if db.query(User).filter(User.email == email).first():
         raise HTTPException(409, "Email already registered! Proceed to login.")
     
     code = generate_verification_code()
-    store_verification_code(payload.email, code)
-    send_verification_email(payload.email, code)
+    store_verification_code(email, code)
+    send_verification_email(email, code)
     return EmailVerificationResponse(message="Verification email sent", verified=False)
 
 @router.post("/verify-email", response_model=EmailVerificationResponse)
-def verify_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
+def verify_email_endpoint(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
     code = get_verification_code(payload.email)
-    if not code or code != payload.code:
+    if not code or code != payload.verification_code:
         raise HTTPException(400, "Invalid verification code")
     delete_verification_code(payload.email)
     return EmailVerificationResponse(message="Email verified", verified=True)
@@ -56,12 +56,12 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
         major=payload.major,
         created_at=datetime.utcnow(),
     )
-    db.add(insertUser)
     try:
+        db.add(insertUser)
         db.commit()
+        db.refresh(insertUser)
+        return insertUser
     except IntegrityError:
         db.rollback()
         raise HTTPException(400, "Could not create user. Please try again.")
-    db.refresh(insertUser)
-    return insertUser
 
