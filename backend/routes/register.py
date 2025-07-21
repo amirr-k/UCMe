@@ -29,6 +29,12 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
         created_at=datetime.utcnow(),
     )
     db.add(insertUser)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(400, "Could not create user. Please try again.")
+    
     db.commit()
     db.refresh(insertUser)
     return insertUser
