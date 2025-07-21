@@ -1,6 +1,6 @@
 # UCMe
 
-A college-specific dating app built with FastAPI and PostgreSQL.
+A college-specific dating app built with React, FastAPI and PostgreSQL.
 
 ## Project Structure
 
@@ -27,7 +27,6 @@ ucme/
 
 - **Backend**: FastAPI (Python)
 - **Database**: PostgreSQL + SQLAlchemy
-- **Authentication**: JWT + bcrypt
 
 ## Getting Started
 
@@ -59,18 +58,14 @@ The API will run on `http://localhost:8000`.
 
 ## Features (MVP)
 
-- 🚧 User authentication (signup/login)
-- 🚧 Profile creation and editing
-- 🚧 Swipe interface for discovering matches
-- 🚧 Chat functionality for matched users
-- 🚧 College verification system
+- User authentication (signup/login)
+- Profile creation and editing
+- Swipe interface for discovering matches
+- Chat functionality for matched users
+- College verification system
 
 ## API Endpoints
 
 ### Authentication
 - `POST /api/auth/signup` - Register new user
 - `POST /api/auth/login` - User login
-
-## Project Status
-
-**SCAFFOLDED** - Basic folder structure and dependencies set up. Ready for development.

@@ -11,4 +11,5 @@ app = FastAPI(
     description="A college-specific dating app for UC students",
     version="1.0.0"
 )
+app.include_router(register.router, prefix="/auth", tags=["auth"])
 
