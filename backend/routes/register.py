@@ -25,14 +25,6 @@ def send_email_code(email: str, db: Session = Depends(get_db)):
     send_verification_email(email, code)
     return EmailVerificationResponse(message="Verification email sent", verified=False)
 
-@router.post("/verify-email", response_model=EmailVerificationResponse)
-def verify_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
-    code = get_verification_code(payload.email)
-    if not code or code != payload.verification_code:
-        raise HTTPException(400, "Invalid verification code")
-    delete_verification_code(payload.email)
-    return EmailVerificationResponse(message="Email verified", verified=True)
-
 @router.post("/resend-email", response_model=EmailVerificationResponse)
 def resend_verification_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
     if not any(payload.email.endswith(domain) for domain in validEmails):
@@ -45,7 +37,6 @@ def resend_verification_email(payload: EmailVerificationRequest, db: Session = D
     return EmailVerificationResponse(message="Verification email sent", verified=False)
 
 @router.post("/register", response_model=UserResponse)
-
 def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     stored_code = get_verification_code(payload.email)
     if not stored_code or stored_code != payload.verification_code:
