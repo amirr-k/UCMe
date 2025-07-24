@@ -20,6 +20,13 @@ def get_user_profile(user_id: int, current_user: User = Depends(get_current_user
 
 @router.put("/me", response_model=UserResponse)
 def update_profile(
+    name: str = None,
+    college: str = None,
+    school: str = None,
+    year: str = None,
+    gender: str = None,
+    major: str = None,
+    profile_pic_url: str = None,
     bio: str = None,
     interests: str = None,
     current_user: User = Depends(get_current_user),
@@ -28,6 +35,18 @@ def update_profile(
         current_user.bio = bio
     if interests is not None:
         current_user.interests = interests
+    if name is not None:
+        current_user.name = name
+    if college is not None:
+        current_user.college = college
+    if year is not None:
+        current_user.year = year
+    if gender is not None:
+        current_user.gender = gender
+    if major is not None:
+        current_user.major = major
+    if profile_pic_url is not None:
+        current_user.profile_pic_url = profile_pic_url
     db.commit()
     db.refresh(current_user)
     return current_user
