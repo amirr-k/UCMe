@@ -15,7 +15,7 @@ class UserBase(BaseModel):
     interests: Optional[str] = None
 
 class UserCreate(UserBase):
-    pass
+    verification_code: str
 
 class UserResponse(UserBase):
     id: int

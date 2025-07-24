@@ -12,7 +12,7 @@ router = APIRouter()
 validEmails = {"@ucsd.edu", "@ucdavis.edu", "@ucr.edu", "@ucla.edu", "@uci.edu"
                ,"ucsc.edu", "@ucmerced.edu", "@ucsb.edu", "@berkeley.edu"}
 
-
+#Ver
 @router.post("/send-verification")
 def send_email_code(email: str, db: Session = Depends(get_db)):
     if not any(email.endswith(domain) for domain in validEmails):
@@ -45,7 +45,11 @@ def resend_verification_email(payload: EmailVerificationRequest, db: Session = D
     return EmailVerificationResponse(message="Verification email sent", verified=False)
 
 @router.post("/register", response_model=UserResponse)
+
 def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+    stored_code = payload.verification_code
+    if not stored_code or stored_code != payload.verification_code:
+        raise HTTPException(400, "Invalid or expired verification code")
     insertUser= User(
         email=payload.email,
         name=payload.name,
@@ -60,6 +64,7 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
         db.add(insertUser)
         db.commit()
         db.refresh(insertUser)
+        delete_verification_code(payload.email)
         return insertUser
     except IntegrityError:
         db.rollback()
