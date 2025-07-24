@@ -8,7 +8,7 @@ from utils.auth import generate_verification_code, store_verification_code, get_
 
 router = APIRouter()
 
-@router.post("/login")
+@router.post("/send-verification")
 def login_code(email: str, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == email).first()
     if not user:
