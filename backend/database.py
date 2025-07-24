@@ -9,12 +9,12 @@ databaseUrl = os.getenv('dburl')
 if not databaseUrl:
     raise RuntimeError("Failed to retrieve database from .env file")
 
-engine = create_engine(databaseUrl)
+engine = create_engine(databaseUrl) #Create database engine
 localSession = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 base = declarative_base()
 
 def get_db() -> Session:
-    db = localSession()
+    db = localSession() #Create a new session for the database
     try:
         yield db
     finally:

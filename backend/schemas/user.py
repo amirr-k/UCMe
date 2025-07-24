@@ -15,7 +15,6 @@ class UserBase(BaseModel):
     interests: Optional[str] = None
 
 class UserCreate(UserBase):
-    """Schema for user registration request"""
     pass
 
 class UserResponse(UserBase):
@@ -26,11 +25,9 @@ class UserResponse(UserBase):
         from_attributes = True
 
 class EmailVerificationRequest(BaseModel):
-    """Schema for email verification request"""
     email: EmailStr
     verification_code: str
 
 class EmailVerificationResponse(BaseModel):
-    """Schema for email verification response"""
     message: str
     verified: bool
