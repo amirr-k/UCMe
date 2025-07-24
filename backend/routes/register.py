@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 router = APIRouter()
 
 validEmails = {"@ucsd.edu", "@ucdavis.edu", "@ucr.edu", "@ucla.edu", "@uci.edu"
-               ,"ucsc.edu", "@ucmerced.edu", "@ucsb.edu", "@berkeley.edu"}
+               ,"@ucsc.edu", "@ucmerced.edu", "@ucsb.edu", "@berkeley.edu"}
 
 #Ver
 @router.post("/send-verification")
@@ -47,7 +47,7 @@ def resend_verification_email(payload: EmailVerificationRequest, db: Session = D
 @router.post("/register", response_model=UserResponse)
 
 def create_user(payload: UserCreate, db: Session = Depends(get_db)):
-    stored_code = payload.verification_code
+    stored_code = get_verification_code(payload.email)
     if not stored_code or stored_code != payload.verification_code:
         raise HTTPException(400, "Invalid or expired verification code")
     insertUser= User(
