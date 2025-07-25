@@ -28,13 +28,10 @@ def update_profile(
     major: str = None,
     profile_pic_url: str = None,
     bio: str = None,
-    interests: str = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)):
     if bio is not None:
         current_user.bio = bio
-    if interests is not None:
-        current_user.interests = interests
     if name is not None:
         current_user.name = name
     if college is not None:

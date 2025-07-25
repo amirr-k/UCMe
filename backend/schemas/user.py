@@ -12,7 +12,6 @@ class UserBase(BaseModel):
     major: str
     profile_pic_url: Optional[str] = None
     bio: Optional[str] = None
-    interests: Optional[str] = None
 
 class UserCreate(UserBase):
     verification_code: str

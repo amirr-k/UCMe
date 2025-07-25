@@ -17,7 +17,6 @@ class User(base):
     created_at = Column(DateTime) 
     profile_pic_url = Column(String, nullable=True)  
     bio = Column(Text, nullable=True)
-    interests = Column(String, nullable=True) 
     
 
     

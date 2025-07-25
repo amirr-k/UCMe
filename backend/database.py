@@ -13,7 +13,7 @@ engine = create_engine(databaseUrl) #Create database engine
 localSession = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 base = declarative_base()
 
-def get_db() -> Session:
+def get_db():
     db = localSession() #Create a new session for the database
     try:
         yield db

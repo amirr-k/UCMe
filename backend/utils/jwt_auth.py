@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
+SECRET_KEY = os.getenv("", "")
 ALGORITHM = "HS256" #HMAC SHA-256 - cryptographic method to create signatures
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 
