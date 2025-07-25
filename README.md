@@ -74,36 +74,14 @@ cd backend
 uvicorn main:app --reload
 ```
 
-The API will run on `http://localhost:8000`.
-
-## Features (Implemented)
-
-- ✅ **Email verification system** with magic codes
-- ✅ **UC email validation** (restricted to UC domains)
-- ✅ **User registration** with profile creation
-- ✅ **Database models** for user data
-- 🚧 **User authentication** (login system)
-- 🚧 **Profile editing**
-- 🚧 **Swipe interface** for discovering matches
-- 🚧 **Chat functionality** for matched users
-
-## API Endpoints
-
 ### Registration & Email Verification
 - `POST /auth/send-verification` - Send magic code to email
 - `POST /auth/verify-email` - Verify email with magic code
 - `POST /auth/register` - Complete user registration
 - `POST /auth/resend-email` - Resend verification code
 
-### Authentication
-- `POST /auth/login` - User login (basic implementation)
-
 ## Registration Flow
 
 1. **Send Verification**: User provides UC email → Magic code sent
 2. **Verify Email**: User enters magic code → Email verified
 3. **Complete Registration**: User provides profile data → Account created
-
-## Project Status
-
-**DEVELOPMENT** - Email verification system implemented. Ready for authentication and core features.
