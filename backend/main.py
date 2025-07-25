@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from database import base, engine
 import models.user
-from routes import register, login
+from routes import register
 
 # Create database tables
 base.metadata.create_all(bind=engine)
@@ -12,5 +12,4 @@ app = FastAPI(
     version="1.0.0"
 )
 app.include_router(register.router, prefix="/auth", tags=["auth"])
-app.include_router(login.router, prefix="/auth", tags=["auth"])
 
