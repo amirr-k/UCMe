@@ -7,10 +7,9 @@ class Image(base):
     __tablename__ = 'images'
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    image_url = Column(String, nullable=False)
-    is_primary = Column(Boolean, default=False)  # Flag for profile picture
-    created_at = Column(DateTime, server_default=func.now())
+    userID = Column(Integer, ForeignKey('users.id'), nullable=False)
+    imageURL = Column(String, nullable=False)
+    createdAt = Column(DateTime, server_default=func.now())
     
     # Relationship to User model
     user = relationship("User", back_populates="images")
