@@ -14,7 +14,7 @@ class User(base):
     year = Column(Integer, nullable=False) #'2025, '2026, etc
     gender = Column(String, nullable=False)# Male, Female, Other (Specified)
     major = Column(String, nullable=False) #Major -- Self Def.
-    created_at = Column(DateTime, server_default=func.now()) #Self explanatory, set to current time
+    createdAt = Column(DateTime, server_default=func.now()) #Self explanatory, set to current time
 
     #Profile Information
     bio = Column(Text, nullable=True) #Self explanatory
