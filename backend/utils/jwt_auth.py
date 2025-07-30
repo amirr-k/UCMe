@@ -8,24 +8,24 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 
-SECRET_KEY = os.getenv("", "")
+SECRET_KEY = os.getenv("SECRET_KEY", "83aa74c94b9591a3d16897b63b579d3e65f9230c48ea2f5624e07d61d19a3b48")
 ALGORITHM = "HS256" #HMAC SHA-256 - cryptographic method to create signatures
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
+ACCESS_TOKEN_EXPIRE = 60 * 24  # 1 day
 
 security = HTTPBearer()
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def createToken(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str) -> Optional[str]:
+def verifyToken(token: str) -> Optional[str]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
@@ -35,7 +35,7 @@ def verify_token(token: str) -> Optional[str]:
     except JWTError:
         return None
 
-def get_current_user(
+def getCurrentUser(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)) -> User:
     email = verify_token(credentials.credentials)

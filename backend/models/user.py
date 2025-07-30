@@ -14,7 +14,9 @@ class User(base):
     school = Column(String, nullable=False) #For UCSD, College System, for others, L&S, Engineering, etc
     year = Column(Integer, nullable=False) #'2025, '2026, etc
     gender = Column(String, nullable=False)# Male, Female, Other (Specified)
-    major = Column(String, nullable=False) #Major -- Self Def.
+    major = Column(String, nullable=False) #Major
+    age = Column(Integer, nullable=False) #Age
+    moderationStatus = Column(String, nullable=False, default="Pending") #Pending, Approved, Rejected
     createdAt = Column(DateTime, server_default=func.now()) #Self explanatory, set to current time
 
     #Profile Information
@@ -39,13 +41,15 @@ class User(base):
     images = relationship("Image", back_populates="user", cascade="all, delete-orphan")
 
     #Swipe and Match Relationships
-    sent_swipes = relationship("Swipe", foreign_keys="Swipe.userId", backref="sender")
-    received_swipes = relationship("Swipe", foreign_keys="Swipe.targetId", backref="target")
-    matches_as_user1 = relationship("Match", foreign_keys="Match.userId1", backref="user1")
-    matches_as_user2 = relationship("Match", foreign_keys="Match.userId2", backref="user2")
+    sentSwipes = relationship("Swipe", foreign_keys="Swipe.userId", backref="sender")
+    receivedSwipes = relationship("Swipe", foreign_keys="Swipe.targetId", backref="target")
+    matchesAsUser1 = relationship("Match", foreign_keys="Match.userId1", backref="user1")
+    matchesAsUser2 = relationship("Match", foreign_keys="Match.userId2", backref="user2")
     
 
-    
+class Token(BaseModel):
+    accessToken: str
+    tokenType: str
     
     
 
