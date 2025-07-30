@@ -30,13 +30,19 @@ class User(base):
 
     
     #Matchmaking Preferences
-    minAge = Column(Integer, nullable=False) #Minimum Age
-    maxAge = Column(Integer, nullable=False) #Maximum Age
+    minYear = Column(Integer, nullable=False) #Minimum Year
+    maxYear = Column(Integer, nullable=False) #Maximum Year
     genderPref= Column(String, nullable=False) #Male, Female, Other (Specified)
     otherColleges = Column(ARRAY(String), nullable=False) #Other Colleges (Specified)
     majors = Column(ARRAY(String), nullable=False) #Majors (Specified)
 
     images = relationship("Image", back_populates="user", cascade="all, delete-orphan")
+
+    #Swipe and Match Relationships
+    sent_swipes = relationship("Swipe", foreign_keys="Swipe.userId", backref="sender")
+    received_swipes = relationship("Swipe", foreign_keys="Swipe.targetId", backref="target")
+    matches_as_user1 = relationship("Match", foreign_keys="Match.userId1", backref="user1")
+    matches_as_user2 = relationship("Match", foreign_keys="Match.userId2", backref="user2")
     
 
     
