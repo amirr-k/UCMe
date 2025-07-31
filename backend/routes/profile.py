@@ -1,198 +1,143 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_, and_
-from typing import List
 from database import get_db
 from models.user import User
-from models.swipe import Swipe
-from models.match import Match
 from schemas.user import UserResponse, UserProfileUpdate, UserPreferencesUpdate
-from schemas.swipe import SwipeCreate, SwipeResponse
-from schemas.match import MatchResponse, MatchUserResponse
 from utils.jwt_auth import getCurrentUser
+from sqlalchemy.exc import IntegrityError
 
-#All routes start with /profile
-router = APIRouter(tags=["Profile"], prefix="/profile")
+router = APIRouter(tags=["Profile"])
 
-#Get current user's profile
 @router.get("/me", response_model=UserResponse)
-def getUserProfile(currentUser: User = Depends(getCurrentUser)):
+async def getCurrentUserProfile(
+    currentUser: User = Depends(getCurrentUser)
+):
+    """Get current user's complete profile"""
     return currentUser
 
-#Get another user's profile by ID
-@router.get("/{userID}", response_model=UserResponse)
-def getUserProfile(userID: int, db: Session = Depends(get_db), currentUser: User = Depends(getCurrentUser)):
-    user = db.query(User).filter(User.id == userID).first()
+@router.put("/update", response_model=UserResponse)
+async def updateProfile(
+    profileData: UserProfileUpdate,
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    """Update current user's profile information"""
+    
+    # Get current user from database to ensure fresh data
+    user = db.query(User).filter(User.id == currentUser.id).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    return user
-
-#Update user profile
-@router.put("/update", response_model=UserResponse)
-def updateProfile(profileData: UserProfileUpdate, db: Session = Depends(get_db), currentUser: User = Depends(getCurrentUser)):
-    for key, value in profileData.dict(exclude_unset=True).items():
-        setattr(currentUser, key, value)
     
-    db.commit()
-    db.refresh(currentUser)
-    return currentUser
-
-#Update user preferences
-@router.put("/preferences", response_model=UserResponse)
-def updatePreferences(preferencesData: UserPreferencesUpdate,db: Session = Depends(get_db), currentUser: User = Depends(getCurrentUser)):
-    for key, value in preferencesData.dict(exclude_unset=True).items():
-        setattr(currentUser, key, value)
+    # Update only provided fields (exclude_none in schema handles this)
+    updateData = profileData.dict(exclude_none=True)
     
-    db.commit()
-    db.refresh(currentUser)
-    return currentUser
-
-# Get profiles for swiping (recommendations)
-@router.get("/recommendations", response_model=List[UserResponse])
-def getRecommendations(limit: int = 10, db: Session = Depends(get_db), currentUser: User = Depends(getCurrentUser)):
-    #Get IDs of users that current user has already swiped on
-    alreadySwiped = db.query(Swipe.targetId).filter(Swipe.userId == currentUser.id)
+    for field, value in updateData.items():
+        if hasattr(user, field):
+            setattr(user, field, value)
     
-    #Exclude current user and already swiped profiles
-    query = db.query(User).filter(User.id != currentUser.id,User.id.notin_(alreadySwiped))
-    
-    #Apply preference filters if they exist
-    if currentUser.genderPref:
-        query = query.filter(User.gender == currentUser.genderPref)
-    
-    if currentUser.minAge and currentUser.maxAge:
-        query = query.filter(and_(User.age >= currentUser.minAge, User.age <= currentUser.maxAge))
-    
-    if currentUser.otherColleges:
-        query = query.filter(or_(User.college == currentUser.college, User.college.in_(currentUser.otherColleges)))
-    
-    if currentUser.majors:query = query.filter(User.major.in_(currentUser.majors))
-    
-    #Order by random to provide variety in recommendations
-    query = query.order_by(func.random())
-    
-    #Limit results
-    recommendations = query.limit(limit).all()
-    
-    return recommendations
-
-#Record swipes
-@router.post("/swipe", response_model=SwipeResponse)
-def createSwipe(swipeData: SwipeCreate,db: Session = Depends(get_db),currentUser: User = Depends(getCurrentUser)):
-    targetUser = db.query(User).filter(User.id == swipeData.targetId).first()
-    if not targetUser:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Target user not found"
-        )
-    
-    #Check if already swiped on this user
-    existingSwipe = db.query(Swipe).filter(Swipe.userId == currentUser.id,Swipe.targetId == swipeData.targetId).first()
-    
-    if existingSwipe:
+    try:
+        db.commit()
+        db.refresh(user)
+        return user
+    except IntegrityError as e:
+        db.rollback()
+        print(f"Profile update error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="You have already swiped on this user"
+            detail="Failed to update profile"
         )
-    
-    #Create new swipe record
-    newSwipe = Swipe(userId=currentUser.id,targetId=swipeData.targetId,isLike=swipeData.isLike)
-    
-    db.add(newSwipe)
-    db.commit()
-    db.refresh(newSwipe)
-    
-    #Check if this creates a match (both users liked each other)
-    isMatch = False
-    matchId = None
-    
-    if swipeData.isLike:
-        # Check if the other person also liked current user
-        otherSwipe = db.query(Swipe).filter(Swipe.userId == swipeData.targetId, Swipe.targetId == currentUser.id,Swipe.isLike == True).first()
-        
-        if otherSwipe:
-            isMatch = True
-            
-            #Create a match record
-            userId1, userId2 = sorted([currentUser.id, swipeData.targetId])
-            
-            #Check if match already exists
-            existingMatch = db.query(Match).filter(Match.userId1 == userId1,Match.userId2 == userId2).first()
-            
-            if not existingMatch:
-                newMatch = Match(userId1=userId1,userId2=userId2)
-                db.add(newMatch)
-                db.commit()
-                db.refresh(newMatch)
-                matchId = newMatch.id
-            else:
-                matchId = existingMatch.id
-    
-    return {
-        "id": newSwipe.id,
-        "targetId": newSwipe.targetId,
-        "isLike": newSwipe.isLike,
-        "isMatch": isMatch,
-        "matchId": matchId
-    }
 
-#Get all matches for current user
-@router.get("/matches", response_model=List[MatchUserResponse])
-def getMatches(db: Session = Depends(get_db),currentUser: User = Depends(getCurrentUser)):
-    matches = db.query(Match).filter(or_(Match.userId1 == currentUser.id,Match.userId2 == currentUser.id)).order_by(Match.createdAt.desc()).all()
+@router.put("/preferences", response_model=UserResponse)
+async def updatePreferences(
+    preferencesData: UserPreferencesUpdate,
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    """Update current user's matching preferences"""
     
-    result = []
-    for match in matches:
-        otherUserId = match.userId2 if match.userId1 == currentUser.id else match.userId1
-        otherUser = db.query(User).filter(User.id == otherUserId).first()
-        
-        if otherUser:
-            result.append({"matchId": match.id,"createdAt": match.createdAt,"user": otherUser})
-    
-    return result
-
-#Get a specific match by ID
-@router.get("/matches/{matchId}", response_model=MatchResponse)
-def getMatch(matchId: int,db: Session = Depends(get_db),currentUser: User = Depends(getCurrentUser)):
-    match = db.query(Match).filter(Match.id == matchId,or_(Match.userId1 == currentUser.id,Match.userId2 == currentUser.id)).first()
-    
-    if not match:
+    # Get current user from database
+    user = db.query(User).filter(User.id == currentUser.id).first()
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Match not found"
+            detail="User not found"
         )
     
-    otherUserId = match.userId2 if match.userId1 == currentUser.id else match.userId1
+    # Update preference fields
+    updateData = preferencesData.dict(exclude_none=True)
     
-    otherUser = db.query(User).filter(User.id == otherUserId).first()
+    for field, value in updateData.items():
+        if hasattr(user, field):
+            setattr(user, field, value)
     
-    return {
-        "id": match.id,
-        "createdAt": match.createdAt,
-        "user": otherUser
-    }
+    try:
+        db.commit()
+        db.refresh(user)
+        return user
+    except IntegrityError as e:
+        db.rollback()
+        print(f"Preferences update error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Failed to update preferences"
+        )
 
-#Unmatch with a user
-@router.delete("/matches/{matchId}", status_code=status.HTTP_204_NO_CONTENT)
-def deleteMatch(matchId: int,db: Session = Depends(get_db),currentUser: User = Depends(getCurrentUser)):
-    match = db.query(Match).filter(
-        Match.id == matchId,
-        or_(
-            Match.userId1 == currentUser.id,
-            Match.userId2 == currentUser.id
-        )
+@router.get("/viewProfile/{userId}", response_model=UserResponse)
+async def viewOtherUserProfile(
+    userId: int,
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    """View another user's profile by ID"""
+    
+    # Find the user profile
+    user = db.query(User).filter(
+        User.id == userId,
+        User.moderationStatus == "Approved"
     ).first()
     
-    if not match:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Match not found"
+            detail="Profile not found"
         )
     
-    db.delete(match)
-    db.commit()
+    if user.id == currentUser.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Use /me endpoint to view your own profile"
+        )
     
-    return None
+    return user
+
+@router.delete("/delete")
+async def deleteProfile(
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    """Delete current user's profile and all associated data"""
+    
+    # Get current user from database
+    user = db.query(User).filter(User.id == currentUser.id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    try:
+        # SQLAlchemy cascade deletions will handle related records (images, swipes, matches)
+        db.delete(user)
+        db.commit()
+        
+        return {"message": "Profile deleted successfully"}
+    except Exception as e:
+        db.rollback()
+        print(f"Profile deletion error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete profile"
+        )

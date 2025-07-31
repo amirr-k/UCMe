@@ -3,184 +3,170 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 from schemas.user import UserCreate, UserResponse, EmailVerificationRequest, EmailVerificationResponse, Token
-from utils.auth import generate_verification_code, store_verification_code, get_verification_code, delete_verification_code, send_verification_email
-from utils.jwt_auth import create_access_token
+from utils.auth import generateVerificationCode, storeVerificationCode, getVerificationCode, deleteVerificationCode, sendVerificationEmail
+from utils.jwt_auth import createAccessToken
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 
 router = APIRouter(tags=["Authentication"])
 
-#Valid UC email domains
-validEmails = {
-    "@ucsd.edu", "@ucdavis.edu", "@ucr.edu", "@ucla.edu", "@uci.edu",
-    "@ucsc.edu", "@ucmerced.edu", "@ucsb.edu", "@berkeley.edu"
+UC_EMAIL_DOMAINS = {
+    "@ucla.edu", "@berkeley.edu", "@ucsd.edu", "@ucsb.edu", "@uci.edu",
+    "@ucr.edu", "@ucsc.edu", "@ucdavis.edu", "@ucmerced.edu"
 }
 
-#Registration endpoints
-@router.post("/register/send-verification", response_model=EmailVerificationResponse)
-async def send_register_verification(email: str, db: Session = Depends(get_db)):
-    #Validate UC email
-    if not any(email.endswith(domain) for domain in validEmails):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Please enter your University of California Email Address"
-        )
-    
-    #Check if email is already registered
-    if db.query(User).filter(User.email == email).first():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, 
-            detail="Email already registered! Please login instead."
-        )
-    
-    #Generate and store verification code
-    code = generate_verification_code()
-    success = store_verification_code(email, code)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="Failed to store verification code. Please try again."
-        )
-    
-    #Send verification email
-    sent = send_verification_email(email, code)
-    if not sent:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="Failed to send verification email. Please try again."
-        )
-    
-    return EmailVerificationResponse(message="Verification email sent", verified=False)
+def validateUCEmail(email: str) -> bool:
+    return any(email.endswith(domain) for domain in UC_EMAIL_DOMAINS)
 
-@router.post("/register/resend", response_model=EmailVerificationResponse)
-async def resend_verification_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
-    # Validate UC email
-    if not any(payload.email.endswith(domain) for domain in validEmails):
+@router.post("/register/sendVerification", response_model=EmailVerificationResponse)
+async def sendRegistrationVerification(email: str, db: Session = Depends(get_db)):
+    if not validateUCEmail(email):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Please enter your University of California Email Address"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please use a valid UC email address"
         )
     
-    # Check if email is already registered
-    if db.query(User).filter(User.email == payload.email).first():
+    existingUser = db.query(User).filter(User.email == email).first()
+    if existingUser:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, 
-            detail="Email already registered! Please login instead."
+            detail="Email already registered! Please login instead"
         )
     
-    # Generate and store new verification code
-    code = generate_verification_code()
-    store_verification_code(payload.email, code)
-    send_verification_email(payload.email, code)
+    # Generate and store verification code
+    code = generateVerificationCode()
+    if not storeVerificationCode(email, code):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate verification code"
+        )
     
-    return EmailVerificationResponse(message="Verification email resent", verified=False)
+    if not sendVerificationEmail(email, code):
+        deleteVerificationCode(email)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email"
+        )
+    
+    return EmailVerificationResponse(message="Verification code sent", verified=False)
 
 @router.post("/register", response_model=UserResponse)
-async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
-    # Verify the verification code
-    stored_code = get_verification_code(user_data.email)
-    if not stored_code or stored_code != user_data.verification_code:
+async def register(userData: UserCreate, db: Session = Depends(get_db)):
+    #Verify verification code
+    storedCode = getVerificationCode(userData.email)
+    if not storedCode or storedCode != userData.verificationCode:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Invalid or expired verification code"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code"
         )
     
-    # Create new user
-    new_user = User(
-        email=user_data.email,
-        name=user_data.name,
-        college=user_data.college,
-        school=user_data.school,
-        year=user_data.year,
-        gender=user_data.gender,
-        major=user_data.major,
-        bio=user_data.bio,
-        interests=user_data.interests,
-        classes=user_data.classes,
-        lookingFor=user_data.lookingFor,
-        smokes=user_data.smokes,
-        drinks=user_data.drinks,
-        pronouns=user_data.pronouns,
-        location=user_data.location,
-        hometown=user_data.hometown,
-        minYear=user_data.minAge,  # Adjust field name if necessary
-        maxYear=user_data.maxAge,  # Adjust field name if necessary
-        genderPref=user_data.genderPref,
-        otherColleges=user_data.otherColleges,
-        majors=user_data.majors,
-        createdAt=datetime.utcnow()
+    newUser = User(
+        email=userData.email,
+        name=userData.name,
+        college=userData.college,
+        school=userData.school,
+        year=userData.year,
+        gender=userData.gender,
+        major=userData.major,
+        age=userData.age,
+        bio=userData.bio,
+        interests=userData.interests,
+        classes=userData.classes,
+        lookingFor=userData.lookingFor,
+        smokes=userData.smokes,
+        drinks=userData.drinks,
+        pronouns=userData.pronouns,
+        location=userData.location,
+        hometown=userData.hometown,
+        minAge=userData.minAge, 
+        maxAge=userData.maxAge,  
+        genderPref=userData.genderPref,
+        otherColleges=userData.otherColleges,
+        majors=userData.majors
     )
     
     try:
         # Add to database
-        db.add(new_user)
+        db.add(newUser)
         db.commit()
-        db.refresh(new_user)
-        
-        # Delete verification code
-        delete_verification_code(user_data.email)
-        
-        return new_user
+        db.refresh(newUser)
+        deleteVerificationCode(userData.email)
+        return newUser
     except IntegrityError:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Could not create user. Email may already be registered."
+            detail="Could not create user"
         )
 
-# Login endpoints
-@router.post("/login/send-verification", response_model=EmailVerificationResponse)
-async def send_login_verification(email: str, db: Session = Depends(get_db)):
-    # Check if user exists
+@router.post("/login/sendVerification", response_model=EmailVerificationResponse)
+async def sendLoginVerification(email: str, db: Session = Depends(get_db)):
+    #Check if user exists
     user = db.query(User).filter(User.email == email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found. Please register first."
+            detail="User not found. Please register first"
         )
     
     # Generate and store verification code
-    code = generate_verification_code()
-    success = store_verification_code(email, code)
-    if not success:
+    code = generateVerificationCode()
+    if not storeVerificationCode(email, code):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="Failed to store verification code. Please try again."
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate verification code"
         )
     
-    # Send verification email
-    sent = send_verification_email(email, code)
-    if not sent:
+    if not sendVerificationEmail(email, code):
+        deleteVerificationCode(email)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="Failed to send verification email. Please try again."
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email"
         )
     
     return EmailVerificationResponse(message="Verification code sent to email", verified=False)
 
-@router.post("/login/verify", response_model=Token)
-async def verify_login(email: str, verification_code: str, db: Session = Depends(get_db)):
-    # Verify the verification code
-    stored_code = get_verification_code(email)
-    if not stored_code or stored_code != verification_code:
+@router.post("/login", response_model=Token)
+async def login(request: EmailVerificationRequest, db: Session = Depends(get_db)):
+    storedCode = getVerificationCode(request.email)
+    if not storedCode or storedCode != request.verificationCode:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Invalid verification code!"
         )
     
-    # Get user
-    user = db.query(User).filter(User.email == email).first()
+    user = db.query(User).filter(User.email == request.email).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="User not found!"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
         )
     
-    # Generate JWT token
-    access_token = create_access_token(data={"sub": user.email})
+    accessToken = createAccessToken(data={"sub": user.email})
+    deleteVerificationCode(request.email)
     
-    # Delete the verification code
-    delete_verification_code(email)
+    return Token(accessToken=accessToken, tokenType="bearer")
+
+@router.post("/resendVerification", response_model=EmailVerificationResponse)
+async def resendVerification(email: str, db: Session = Depends(get_db)):
+    if not validateUCEmail(email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please use a valid UC email address"
+        )
     
-    # Return the token
-    return {"access_token": access_token, "token_type": "bearer"}
+    code = generateVerificationCode()
+    if not storeVerificationCode(email, code):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate verification code"
+        )
+    
+    if not sendVerificationEmail(email, code):
+        deleteVerificationCode(email)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email"
+        )
+    
+    return EmailVerificationResponse(message="Verification code resent", verified=False)

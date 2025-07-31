@@ -12,25 +12,25 @@ redis_client = redis.Redis(
     decode_responses=True
 )
 
-def generate_verification_code():
+def generateVerificationCode():
     return str(secrets.randbelow(1000000)).zfill(6)
 
-def store_verification_code(email: str, code: str, expires_in: int = 300):
+def storeVerificationCode(email: str, code: str, expiresIn: int = 300):
     try:
         key = f"verification:{email}"
-        redis_client.setex(key, expires_in, code)
+        redis_client.setex(key, expiresIn, code)
         return True
     except Exception:
         return False
 
-def get_verification_code(email: str) -> Optional[str]:
+def getVerificationCode(email: str) -> Optional[str]:
     try:
         key = f"verification:{email}"
         return redis_client.get(key)
     except Exception:
         return None
 
-def delete_verification_code(email: str) -> bool:
+def deleteVerificationCode(email: str) -> bool:
     try:
         key = f"verification:{email}"
         redis_client.delete(key)
@@ -38,9 +38,9 @@ def delete_verification_code(email: str) -> bool:
     except Exception:
         return False
 
-def send_verification_email(email: str, code: str):
+def sendVerificationEmail(email: str, code: str):
     try:
-        smtp_options = {
+        smtpOptions = {
             "host": os.getenv('SMTP_HOST', 'smtp.gmail.com'),
             "port": int(os.getenv('SMTP_PORT', 587)),
             "user": os.getenv('SMTP_USER'),
@@ -48,13 +48,12 @@ def send_verification_email(email: str, code: str):
             "tls": True,
         }
         
-        html_content = f"""
+        htmlContent = f"""
         <html>
         <body>
             <h2>Welcome to UCMe!</h2>
             <p>Your verification code is: <strong>{code}</strong></p>
             <p>This code will expire in 5 minutes.</p>
-            <p>If you didn't request this code, you can safely ignore this email.</p>
             <p>Please do not share this code with anyone.</p>
         </body>
         </html>
@@ -62,13 +61,13 @@ def send_verification_email(email: str, code: str):
         
         message = emails.Message(
             subject="Your UCMe Verification Code",
-            html=html_content,
+            html=htmlContent,
             mail_from=(os.getenv('APP_NAME', 'UCMe'), os.getenv('SMTP_USER'))
         )
         
         response = message.send(
             to=email,
-            smtp=smtp_options
+            smtp=smtpOptions
         )
         
         return response.status_code == 250

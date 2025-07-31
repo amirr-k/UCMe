@@ -3,26 +3,29 @@ from typing import Optional
 from datetime import datetime
 from models.images import Image
 
-#Base image schema
+# Base image schema
 class ImageBase(BaseModel):
-    image_url: str
-    is_primary: bool = False
+    imageUrl: str
 
-#For creating a new image
+# For creating a new image
 class ImageCreate(ImageBase):
-    pass
+    isPrimary: bool = False
 
-#For updating an image
+# For updating an image
 class ImageUpdate(BaseModel):
-    is_primary: Optional[bool] = None
+    imageUrl: Optional[str] = None
+    isPrimary: Optional[bool] = None
     
     class Config:
         exclude_none = True
 
+# Complete image response schema
 class ImageResponse(ImageBase):
     id: int
-    user_id: int
-    createdAt: datetime
+    userId: int
+    imageUrl: str # URL/path to the image file
+    isPrimary: bool # Whether this is the user's main profile picture
+    createdAt: datetime # When image was uploaded
     
     class Config:
         from_attributes = True

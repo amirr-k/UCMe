@@ -1,42 +1,42 @@
-# schemas/user.py
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 from datetime import datetime
 
-#Base user schema with common fields
+# Base user schema with common fields
 class UserBase(BaseModel):
     email: EmailStr
 
-#For creating a new user (registration)
+# For creating a new user (registration)
 class UserCreate(BaseModel):
     email: EmailStr
     name: str = Field(min_length=2, max_length=100)
-    college: str #This is a restricted field, so we don't need to validate it
-    school: str #Same with this
-    year: int #Same with this
-    gender: str = Field(min_length=2, max_length=100) #Allows for self defined gender
-    major: str = Field(min_length=2, max_length=100) #Allows for self defined major
-    verification_code: str #Verification Code for Account Creation
+    college: str # UC campus (restricted list)
+    school: str # Specific school within campus
+    year: int # Graduation year (2024, 2025, etc)
+    age: int = Field(ge=18, le=100) # Current age of user
+    gender: str = Field(min_length=2, max_length=100) # Self-defined gender
+    major: str = Field(min_length=2, max_length=100) # Academic major
+    verificationCode: str # Email verification code for account creation
 
-    bio: str = Field(min_length=10, max_length=500)
-    interests: List[str] = Field(min_items=1) #At least one interest required
-    classes: List[str] = [] #Optional but initialized as empty list
-    lookingFor: str #Restricted field, so we don't need to validate it
-    smokes: bool = False #Defaulted
-    drinks: bool = False #Defaulted
-    pronouns: str = Field(min_length=1) #Allows for self defined pronouns
-    location: str = Field(min_length=1) #Allows for self defined location
-    hometown: str = Field(min_length=1) #Allows for self defined hometown
+    bio: str = Field(min_length=10, max_length=500) # Personal bio/description
+    interests: List[str] = Field(min_items=1) # List of interests (at least one required)
+    classes: List[str] = [] # Current classes (optional)
+    lookingFor: str # What user is seeking (dating, friends, etc)
+    smokes: bool = False # Smoking preference
+    drinks: bool = False # Drinking preference  
+    pronouns: str = Field(min_length=1) # Preferred pronouns
+    location: str = Field(min_length=1) # Current location
+    hometown: str = Field(min_length=1) # Hometown
 
-    minAge: int = Field(ge=18, le=100)  #Minimum Age
-    maxAge: int = Field(ge=18, le=100) #Maximum Age
-    genderPref: str = Field(min_length=1) #Gender Preference
-    otherColleges: List[str] = []  #Other Colleges (Specified)
-    majors: List[str] = []  #Majors (Specified)
+    minAge: int = Field(ge=18, le=100) # Minimum preferred age for matches
+    maxAge: int = Field(ge=18, le=100) # Maximum preferred age for matches
+    genderPref: str = Field(min_length=1) # Preferred gender for matches
+    otherColleges: List[str] = [] # Other UC campuses user wants to see
+    majors: List[str] = [] # Preferred majors for matches
 
-    #Validator for maxAge and minAge
+    # Validator to ensure maxAge is greater than or equal to minAge
     @validator('maxAge')
-    def maxAge_must_be_greater_than_minAge(cls, v, values):
+    def validateAgeRange(cls, v, values):
         if 'minAge' in values and v < values['minAge']:
             raise ValueError('maxAge must be greater than or equal to minAge')
         return v
@@ -84,27 +84,28 @@ class UserPreferencesUpdate(BaseModel):
         #Ensures that None values are excluded when converting to dict
         exclude_none = True
 
-#For images
+# Schema for user profile images
 class ImageResponse(BaseModel):
     id: int
-    image_url: str
-    is_primary: bool
-    created_at: datetime
+    imageUrl: str # URL/path to the image file
+    isPrimary: bool # Whether this is the user's main profile picture
+    createdAt: datetime # When image was uploaded
     
     class Config:
         from_attributes = True
 
-#Complete user response
+# Complete user profile response 
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
     name: str
     college: str
     school: str
-    year: int
+    year: int # Graduation year
+    age: int # Current age
     gender: str
     major: str
-    created_at: datetime
+    createdAt: datetime # Account creation timestamp
     bio: str
     interests: List[str]
     classes: List[str]
@@ -114,21 +115,27 @@ class UserResponse(BaseModel):
     pronouns: str
     location: str
     hometown: str
-    minAge: int
-    maxAge: int
-    genderPref: str
-    otherColleges: List[str]
-    majors: List[str]
-    images: List[ImageResponse] = []
+    minAge: int # Minimum preferred age for matches
+    maxAge: int # Maximum preferred age for matches
+    genderPref: str # Preferred gender for matches
+    otherColleges: List[str] # Other UC campuses user wants to see
+    majors: List[str] # Preferred majors for matches
+    images: List[ImageResponse] = [] # User's profile images
     
     class Config:
         from_attributes = True
 
-#For auth. endpoints
+# Schema for email verification requests (login and registration)
 class EmailVerificationRequest(BaseModel):
     email: EmailStr
-    verification_code: str
+    verificationCode: str # 6-digit verification code sent to email
 
+# Schema for email verification responses
 class EmailVerificationResponse(BaseModel):
-    message: str
-    verified: bool
+    message: str # Status message for user
+    verified: bool # Whether verification was successful
+
+# Schema for JWT authentication tokens
+class Token(BaseModel):
+    accessToken: str # JWT token for authenticated requests
+    tokenType: str # Token type (always "bearer")
