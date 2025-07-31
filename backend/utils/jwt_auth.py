@@ -15,12 +15,12 @@ ACCESS_TOKEN_EXPIRE_DAYS = 7  # Fixed: Using days instead of minutes for clarity
 security = HTTPBearer()
 
 def createAccessToken(data: dict, expiresDelta: Optional[timedelta] = None):
-    """Create JWT access token with user data"""
+
     toEncode = data.copy()
     if expiresDelta:
         expire = datetime.utcnow() + expiresDelta
     else:
-        expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)  # Fixed: Using days
+        expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     
     toEncode.update({"exp": expire})
     
@@ -34,7 +34,6 @@ def createAccessToken(data: dict, expiresDelta: Optional[timedelta] = None):
         )
 
 def verifyToken(token: str) -> Optional[str]:
-    """Verify JWT token and extract user email"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
@@ -52,7 +51,6 @@ def getCurrentUser(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
-    """Get current user from JWT token"""
     try:
         email = verifyToken(credentials.credentials)
         if email is None:
