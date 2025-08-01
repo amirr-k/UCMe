@@ -12,7 +12,6 @@ router = APIRouter(tags=["Profile"])
 async def getCurrentUserProfile(
     currentUser: User = Depends(getCurrentUser)
 ):
-    """Get current user's complete profile"""
     return currentUser
 
 @router.put("/update", response_model=UserResponse)
@@ -21,7 +20,6 @@ async def updateProfile(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Update current user's profile information"""
     
     # Get current user from database to ensure fresh data
     user = db.query(User).filter(User.id == currentUser.id).first()
@@ -56,7 +54,6 @@ async def updatePreferences(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Update current user's matching preferences"""
     
     # Get current user from database
     user = db.query(User).filter(User.id == currentUser.id).first()
@@ -91,7 +88,6 @@ async def viewOtherUserProfile(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """View another user's profile by ID"""
     
     # Find the user profile
     user = db.query(User).filter(
@@ -118,7 +114,6 @@ async def deleteProfile(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Delete current user's profile and all associated data"""
     
     # Get current user from database
     user = db.query(User).filter(User.id == currentUser.id).first()
