@@ -204,7 +204,6 @@ async def getDiscoveryStats(
 async def getRecommendationFilters(
     currentUser: User = Depends(getCurrentUser)
 ):
-    """Get current user's recommendation filter preferences"""
     return {
         "genderPref": currentUser.genderPref,
         "minAge": currentUser.minAge,
