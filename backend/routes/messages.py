@@ -5,14 +5,14 @@ from database import get_db
 from models.user import User
 from models.match import Match
 from models.message import Conversation, Message
-from schemas.message import MessageCreate, MessageResponse, ConversationCreate, ConversationSummary, ConversationDetail
+from schemas.message import MessageCreate, MessageResponse, ConversationCreate, ConversationSummary, ConversationDetail, getConversationDetail
 from utils.jwt_auth import getCurrentUser
 from typing import List
 
 router = APIRouter(tags=["Messages"])
 
 @router.post("/conversations", response_model=ConversationDetail)
-async def create_conversation(
+async def createConversation(
     conversation: ConversationCreate,
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
@@ -60,7 +60,16 @@ async def create_conversation(
         db.add(newConversation)
         db.commit()
         db.refresh(newConversation)
-        return get_conversation_detail(newConversation.id, currentUser, db)
+        return getConversationDetail(newConversation.id, currentUser, db)
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create conversation: {str(e)}")
+    
+#Gets details of a specific conversation
+@router.get("/conversations/{conversationId}", response_model=ConversationDetail)
+async def getConversation(
+    conversationId: int,
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    return getConversationDetail(conversationId, currentUser, db)
