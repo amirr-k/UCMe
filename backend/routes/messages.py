@@ -5,7 +5,7 @@ from database import get_db
 from models.user import User
 from models.match import Match
 from models.message import Conversation, Message
-from schemas.message import MessageCreate, MessageResponse, ConversationCreate, ConversationSummary, ConversationDetail, getConversationDetail
+from schemas.message import MessageCreate, MessageResponse, ConversationCreate, ConversationSummary, ConversationDetail
 from utils.jwt_auth import getCurrentUser
 from typing import List
 
@@ -51,7 +51,7 @@ async def createConversation(
     ).first()
     
     if existingConversation:
-        return get_conversation_detail(existingConversation.id, currentUser, db)
+        return getConversationDetail(existingConversation.id, currentUser, db)
     
     # If it doesn't exist, create a new conversation
     newConversation = Conversation(userId1=userId1, userId2=userId2)
@@ -73,3 +73,4 @@ async def getConversation(
     db: Session = Depends(get_db)
 ):
     return getConversationDetail(conversationId, currentUser, db)
+    #Define this tomorrow
