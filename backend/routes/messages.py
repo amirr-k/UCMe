@@ -159,3 +159,50 @@ async def listConversations(
                 otherUser=otherUser,
                 unreadCount=unreadCount))
     return result
+
+
+# Send a message
+@router.post("/conversations/{conversationId}/messages", response_model=MessageResponse)
+async def sendMessage(
+    conversationId: int,
+    message: MessageCreate,
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    
+    # Check if conversation exists and if user is a participant
+    conversation = db.query(Conversation).filter(
+        Conversation.id == conversationId,
+        or_(
+            Conversation.userId1 == currentUser.id,
+            Conversation.userId2 == currentUser.id
+        )
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found or you're not a participant"
+        )
+    
+    # Create new message
+    newMessage = Message(
+        conversationId=conversationId,
+        senderId=currentUser.id,
+        content=message.content,
+        isRead=False
+    )
+    
+    try:
+        db.add(newMessage)
+        # Update conversation's lastMessageAt
+        conversation.lastMessageAt = func.now()
+        db.commit()
+        db.refresh(newMessage)
+        return newMessage
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send message"
+        )
