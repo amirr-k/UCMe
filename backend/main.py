@@ -5,7 +5,7 @@ import models.user
 import models.swipe
 import models.match
 import models.images
-from routes import auth, interactions, recommendations, profile
+from routes import auth, interactions, recommendations, profile, messages
 
 # Create database tables on startup
 base.metadata.create_all(bind=engine)
@@ -33,7 +33,7 @@ app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(interactions.router, prefix="/interactions", tags=["Interactions"])
 app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
 app.include_router(profile.router, prefix="/profile", tags=["Profile"])
-app.include_router(messages.router, prefix="/messages", tags=["Messages"]
+app.include_router(messages.router, prefix="/messages", tags=["Messages"])
 
 
 @app.get("/")
