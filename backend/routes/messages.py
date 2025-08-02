@@ -206,3 +206,45 @@ async def sendMessage(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to send message"
         )
+    
+# Reading messages
+@router.put("/conversations/{conversationId}/read")
+async def markConversationAsRead(
+    conversationId: int,
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
+):
+    
+    # Check if conversation exists and if user is a participant
+    # Honestly I should probably make this a separate function this is getting
+    # repetitive -- note to self lol
+    conversation = db.query(Conversation).filter(
+        Conversation.id == conversationId,
+        or_(
+            Conversation.userId1 == currentUser.id,
+            Conversation.userId2 == currentUser.id
+        )
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found or you're not a participant"
+        )
+    
+    try:
+        # Mark all messages from the other user as read
+        db.query(Message).filter(
+            Message.conversationId == conversationId,
+            Message.senderId != currentUser.id,
+            Message.isRead == False
+        ).update({"isRead": True})
+        
+        db.commit()
+        return {"message": "All messages marked as read"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to mark messages as read"
+        )
