@@ -65,7 +65,7 @@ async def createConversation(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create conversation: {str(e)}")
     
-#Gets details of a specific conversation
+# Gets details of a specific conversation
 @router.get("/conversations/{conversationId}", response_model=ConversationDetail)
 async def getConversation(
     conversationId: int,
