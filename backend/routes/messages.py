@@ -73,4 +73,54 @@ async def getConversation(
     db: Session = Depends(get_db)
 ):
     return getConversationDetail(conversationId, currentUser, db)
-    #Define this tomorrow
+  
+def getConversationDetail(conversationId, currentUser, db):
+    conversation = db.query(Conversation).filter(
+        Conversation.id == conversationId,
+        or_(
+            Conversation.userId1 == currentUser.id,
+            Conversation.userId2 == currentUser.id
+        )
+    ).first()
+    
+    if not conversation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Conversation not found"
+        )
+    
+    otherUserId = conversation.userId2 if conversation.userId1 == currentUser.id else conversation.userId1
+    otherUser = db.query(User).filter(User.id == otherUserId).first()
+    
+    if not otherUser:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Other participant not found"
+        )
+    
+    messages = db.query(Message).filter(
+        Message.conversationId == conversationId
+    ).order_by(Message.createdAt.asc()).all()
+    
+    unreadCount = db.query(func.count(Message.id)).filter(
+        Message.conversationId == conversationId,
+        Message.senderId != currentUser.id,
+        Message.isRead == False
+    ).scalar()
+    
+    lastMessage = db.query(Message).filter(
+        Message.conversationId == conversationId
+    ).order_by(Message.createdAt.desc()).first()
+    
+    return ConversationDetail(
+        id=conversation.id,
+        userId1=conversation.userId1,
+        userId2=conversation.userId2,
+        lastMessageAt=conversation.lastMessageAt,
+        createdAt=conversation.createdAt,
+        messages=messages,
+        lastMessage=lastMessage,
+        otherUser=otherUser,
+        unreadCount=unreadCount
+    )
+
