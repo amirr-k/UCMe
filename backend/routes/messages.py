@@ -65,7 +65,7 @@ async def createConversation(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create conversation: {str(e)}")
     
-# Gets details of a specific conversation
+# Gets details/summary of a specific conversation
 @router.get("/conversations/{conversationId}", response_model=ConversationDetail)
 async def getConversation(
     conversationId: int,
@@ -73,7 +73,7 @@ async def getConversation(
     db: Session = Depends(get_db)
 ):
     return getConversationDetail(conversationId, currentUser, db)
-  
+
 def getConversationDetail(conversationId, currentUser, db):
     conversation = db.query(Conversation).filter(
         Conversation.id == conversationId,
@@ -124,3 +124,38 @@ def getConversationDetail(conversationId, currentUser, db):
         unreadCount=unreadCount
     )
 
+# Gets list of conversations for current user
+@router.get("/conversations", response_model=List[ConversationSummary])
+async def listConversations(
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 20):  
+    conversations = db.query(Conversation).filter(
+        or_(
+            Conversation.userId1 == currentUser.id,
+            Conversation.userId2 == currentUser.id
+        )
+    ).order_by(Conversation.lastMessageAt.desc()).offset(skip).limit(limit).all()
+    result = []
+    for convo in conversations:
+        otherUserId = convo.userId2 if convo.userId1 == currentUser.id else convo.userId1
+        otherUser = db.query(User).filter(User.id == otherUserId).first()
+        if otherUser:
+            lastMessage = db.query(Message).filter(
+                Message.conversationId == convo.id).order_by(Message.createdAt.desc()).first()
+            unreadCount = db.query(func.count(Message.id)).filter(
+                Message.conversationId == convo.id,
+                Message.senderId != currentUser.id,
+                Message.isRead == False
+            ).scalar()
+            result.append(ConversationSummary(
+                id=convo.id,
+                userId1=convo.userId1,
+                userId2=convo.userId2,
+                lastMessageAt=convo.lastMessageAt,
+                createdAt=convo.createdAt,
+                lastMessage=lastMessage,
+                otherUser=otherUser,
+                unreadCount=unreadCount))
+    return result
