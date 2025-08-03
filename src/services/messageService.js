@@ -1,0 +1,21 @@
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return { Authorization: `Bearer ${token}` };
+  };
+
+
+  export const getConversations = async (skip = 0, limit = 20) => {
+    try {
+      const response = await axios.get(`${API_URL}/messages/conversations?skip=${skip}&limit=${limit}`, {
+        headers: getAuthHeader()
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      throw error;
+    }
+  };
