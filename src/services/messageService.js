@@ -19,3 +19,15 @@ const getAuthHeader = () => {
       throw error;
     }
   };
+
+  export const getConversation = async (conversationId) => {
+    try {
+      const response = await axios.get(`${API_URL}/messages/conversations/${conversationId}`, {
+        headers: getAuthHeader()
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching conversation:', error);
+      throw error;
+    }
+  };
