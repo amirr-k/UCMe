@@ -31,3 +31,17 @@ const getAuthHeader = () => {
       throw error;
     }
   };
+
+  export const markAsRead = async (conversationId) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/messages/conversations/${conversationId}/read`,
+        {},
+        { headers: getAuthHeader() }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error marking conversation as read:', error);
+      throw error;
+    }
+  };
