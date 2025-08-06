@@ -51,5 +51,14 @@ export default function Conversations(conversationId) {
         }
     }, [conversationId]);
 
+    useEffect(() => {
+        getConversation();
+        // Poll for new messages every 60 seconds
+        const interval = setInterval(getConversation, 60000);
+        
+        return () => clearInterval(interval);
+    }, [conversationId, getConversation]);
+
+    return { conversation, messages, loading, error, sendMessage: sendMessage, markAsRead, refresh: getConversation };
    
 }
