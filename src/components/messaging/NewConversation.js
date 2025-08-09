@@ -27,5 +27,6 @@ function NewConversation({ userId, userName, userImage, onConversationCreated })
         finally{
             setCreating(false);
         }
+    }
     };
     
