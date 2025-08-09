@@ -16,17 +16,33 @@ function NewConversation({ userId, userName, userImage, onConversationCreated })
             const conversation = await createConversation(userId);
             if (onConversationCreated) {
                 onConversationCreated(conversation);
+            } else {
+                navigate(`/messages/${conversation.id}`);
             }
-            else {
-                navigate('/messages/${conversation.id}');
-            }
-        catch(error){
+        } catch (error) {
             setError(error);
-            console.error('Error starting conversation:', error)
-        }
-        finally{
+            console.error('Error starting conversation:', error);
+        } finally {
             setCreating(false);
         }
-    }
     };
     
+    return (
+        <div className="new-conversation">
+            {error && (
+                <div className="error-message">
+                    Failed to start conversation. Please try again.
+                </div>
+            )}
+            <button 
+                className="message-button"
+                onClick={handleStartConversation}
+                disabled={creating}
+            >
+                {creating ? 'Starting chat...' : 'Message'}
+            </button>
+        </div>
+    );
+}
+
+export default NewConversation;
