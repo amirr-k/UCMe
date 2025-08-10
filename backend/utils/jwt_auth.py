@@ -1,4 +1,6 @@
 import os
+import secrets
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -8,13 +10,22 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 
-SECRET_KEY = os.getenv("SECRET_KEY", "83aa74c94b9591a3d16897b63b579d3e65f9230c48ea2f5624e07d61d19a3b48")
-ALGORITHM = "HS256"  # HMAC SHA-256 - cryptographic method to create signatures
-ACCESS_TOKEN_EXPIRE_DAYS = 7  # Fixed: Using days instead of minutes for clarity
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_DAYS = 7
 
 security = HTTPBearer()
 
 def createAccessToken(data: dict, expiresDelta: Optional[timedelta] = None):
+    if not SECRET_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="SECRET_KEY not configured"
+        )
 
     toEncode = data.copy()
     if expiresDelta:
@@ -28,12 +39,17 @@ def createAccessToken(data: dict, expiresDelta: Optional[timedelta] = None):
         encodedJwt = jwt.encode(toEncode, SECRET_KEY, algorithm=ALGORITHM)
         return encodedJwt
     except Exception as e:
+        logger.error(f"Failed to create access token: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create access token"
         )
 
 def verifyToken(token: str) -> Optional[str]:
+    if not SECRET_KEY:
+        logger.error("SECRET_KEY not configured for token verification")
+        return None
+        
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
@@ -41,10 +57,10 @@ def verifyToken(token: str) -> Optional[str]:
             return None
         return email
     except JWTError as e:
-        print(f"JWT verification error: {e}")
+        logger.debug(f"JWT verification error: {e}")
         return None
     except Exception as e:
-        print(f"Token verification error: {e}")
+        logger.error(f"Token verification error: {e}")
         return None
 
 def getCurrentUser(
@@ -70,9 +86,9 @@ def getCurrentUser(
         
         return user
     except HTTPException:
-        raise  # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        print(f"Get current user error: {e}")
+        logger.error(f"Get current user error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",

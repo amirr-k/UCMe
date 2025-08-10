@@ -7,4 +7,5 @@ passlib[bcrypt]
 python-multipart
 python-dotenv
 emails
-redis 
+redis
+asyncpg 

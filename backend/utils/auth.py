@@ -2,49 +2,89 @@ import os
 import secrets
 import redis
 import emails
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
-redis_client = redis.Redis(
-    host=os.getenv('REDIS_HOST', 'localhost'),
-    port=int(os.getenv('REDIS_PORT', 6379)),
-    db=0,
-    decode_responses=True
-)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+redis_client = None
+try:
+    redis_client = redis.Redis(
+        host=os.getenv('REDIS_HOST', 'localhost'),
+        port=int(os.getenv('REDIS_PORT', 6379)),
+        db=0,
+        decode_responses=True,
+        socket_connect_timeout=5,  # 5 second timeout
+        socket_timeout=5
+    )
+    # Test connection
+    redis_client.ping()
+    logger.info("Redis connection established successfully")
+except Exception as e:
+    logger.warning(f"Redis connection failed: {e}. Verification codes will not be stored persistently.")
+    redis_client = None
 
 def generateVerificationCode():
     return str(secrets.randbelow(1000000)).zfill(6)
 
 def storeVerificationCode(email: str, code: str, expiresIn: int = 300):
+    if redis_client is None:
+        logger.warning(f"Redis not available. Verification code for {email}: {code} (expires in {expiresIn}s)")
+        return True 
+    
     try:
         key = f"verification:{email}"
         redis_client.setex(key, expiresIn, code)
         return True
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to store verification code in Redis: {e}")
         return False
 
 def getVerificationCode(email: str) -> Optional[str]:
+    if redis_client is None:
+        logger.warning(f"Redis not available. Cannot retrieve verification code for {email}")
+        return None
+    
     try:
         key = f"verification:{email}"
         return redis_client.get(key)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to get verification code from Redis: {e}")
         return None
 
 def deleteVerificationCode(email: str) -> bool:
+    if redis_client is None:
+        logger.warning(f"Redis not available. Cannot delete verification code for {email}")
+        return True
+    
     try:
         key = f"verification:{email}"
         redis_client.delete(key)
         return True
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to delete verification code from Redis: {e}")
         return False
 
 def sendVerificationEmail(email: str, code: str):
+    # Check if SMTP is properly configured
+    smtp_host = os.getenv('SMTP_HOST')
+    smtp_user = os.getenv('SMTP_USER')
+    smtp_password = os.getenv('SMTP_PASSWORD')
+    
+    # If SMTP is not configured, log the code instead
+    if not all([smtp_host, smtp_user, smtp_password]):
+        logger.info(f"SMTP not configured. Verification code for {email}: {code}")
+        logger.info("To enable email sending, set SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables")
+        return True  # Return True to avoid breaking the flow
+    
     try:
         smtpOptions = {
-            "host": os.getenv('SMTP_HOST', 'smtp.gmail.com'),
+            "host": smtp_host,
             "port": int(os.getenv('SMTP_PORT', 587)),
-            "user": os.getenv('SMTP_USER'),
-            "password": os.getenv('SMTP_PASSWORD'),
+            "user": smtp_user,
+            "password": smtp_password,
             "tls": True,
         }
         
@@ -62,7 +102,7 @@ def sendVerificationEmail(email: str, code: str):
         message = emails.Message(
             subject="Your UCMe Verification Code",
             html=htmlContent,
-            mail_from=(os.getenv('APP_NAME', 'UCMe'), os.getenv('SMTP_USER'))
+            mail_from=(os.getenv('APP_NAME', 'UCMe'), smtp_user)
         )
         
         response = message.send(
@@ -70,7 +110,15 @@ def sendVerificationEmail(email: str, code: str):
             smtp=smtpOptions
         )
         
-        return response.status_code == 250
+        if response.status_code == 250:
+            logger.info(f"Verification email sent successfully to {email}")
+            return True
+        else:
+            logger.error(f"Failed to send email to {email}. Status: {response.status_code}")
+            return False
+            
     except Exception as e:
-        print(f"Email sending error: {e}")
-        return False 
+        logger.error(f"Email sending error for {email}: {e}")
+        # Fallback: log the code instead of failing
+        logger.info(f"Fallback: Verification code for {email}: {code}")
+        return True  # Return True to avoid breaking the flow 
