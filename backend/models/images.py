@@ -14,3 +14,5 @@ class Image(base):
     createdAt = Column(DateTime, server_default=func.now())
     
     user = relationship("User", backref="images")
+
+   

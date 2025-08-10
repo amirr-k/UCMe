@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from database import base, engine
 import models.user
 import models.swipe
 import models.match
 import models.images
-from routes import auth, interactions, recommendations, profile, messages
+from routes import auth, interactions, recommendations, profile, messages, images
 import os
 from dotenv import load_dotenv
 
@@ -52,6 +53,10 @@ app.include_router(interactions.router, prefix="/interactions", tags=["Interacti
 app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
 app.include_router(profile.router, prefix="/profile", tags=["Profile"])
 app.include_router(messages.router, prefix="/messages", tags=["Messages"])
+app.include_router(images.router, prefix="/images", tags=["Images"])
+
+# Mount static files for serving uploaded images
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 
 @app.get("/")
