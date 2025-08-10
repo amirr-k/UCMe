@@ -50,14 +50,14 @@ async def getRecommendations(
     if currentUser.otherColleges and len(currentUser.otherColleges) > 0:
         collegeFilter = or_(
             User.college == currentUser.college,
-            User.college.in_(currentUser.otherColleges)
+            User.otherColleges.contains([User.college])
         )
         preferenceFilters.append(collegeFilter)
     else:
         preferenceFilters.append(User.college == currentUser.college)
     
     if currentUser.majors and len(currentUser.majors) > 0:
-        preferenceFilters.append(User.major.in_(currentUser.majors))
+        preferenceFilters.append(User.majors.contains([User.major]))
     
     if preferenceFilters:
         query = query.filter(and_(*preferenceFilters))
@@ -82,7 +82,7 @@ async def getRecommendations(
     mutualCompatibilityFilters.append(
         or_(
             User.college == currentUser.college,  
-            User.otherColleges.any(currentUser.college),  
+            User.otherColleges.contains([currentUser.college]),  
             User.otherColleges == []  
         )
     )
@@ -167,7 +167,7 @@ async def getDiscoveryStats(
     if currentUser.otherColleges and len(currentUser.otherColleges) > 0:
         collegeFilter = or_(
             User.college == currentUser.college,
-            User.college.in_(currentUser.otherColleges)
+            User.otherColleges.contains([User.college])
         )
         availableQuery = availableQuery.filter(collegeFilter)
     else:

@@ -13,5 +13,4 @@ class Image(base):
     isPrimary = Column(Boolean, default=False, nullable=False) # Whether this is the user's main profile picture
     createdAt = Column(DateTime, server_default=func.now())
     
-    # Relationship to User model for easy access to user data
-    user = relationship("User", back_populates="images")
+    user = relationship("User", backref="images")

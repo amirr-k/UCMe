@@ -38,7 +38,7 @@ class User(base):
     majors = Column(ARRAY(String), nullable=False) # Preferred majors for matches
 
     # Relationships to other models
-    images = relationship("Image", back_populates="user", cascade="all, delete-orphan") # User's profile images
+    images = relationship("Image", backref="user", cascade="all, delete-orphan") # User's profile images
 
     #Interaction and Match Relationships
     sentSwipes = relationship("Swipe", foreign_keys="Swipe.userId", backref="sender") # Likes sent by this user
