@@ -20,8 +20,8 @@ class Conversation(base):
     #Unique constraint to prevent duplicate conversations
     __table_args__ = (
         UniqueConstraint('userId1', 'userId2', name='uq_conversation_participants'),
-        CheckConstraint('userId1 <> userId2', name='check_different_users'),
-        CheckConstraint('userId1 < userId2', name='check_user_order'),
+        CheckConstraint('"userId1" <> "userId2"', name='check_different_users'),
+        CheckConstraint('"userId1" < "userId2"', name='check_user_order'),
     )
 
 class Message(base):
