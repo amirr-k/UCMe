@@ -15,10 +15,6 @@ if not databaseUrl:
 if not databaseUrl.startswith('postgresql://'):
     raise RuntimeError("DATABASE_URL must point to a PostgreSQL database. ARRAY columns are not supported in SQLite.")
 
-# Convert to asyncpg dialect for better macOS compatibility
-if databaseUrl.startswith('postgresql://'):
-    databaseUrl = databaseUrl.replace('postgresql://', 'postgresql+asyncpg://', 1)
-
 engine = create_engine(databaseUrl) #Create database engine
 localSession = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 base = declarative_base()

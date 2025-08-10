@@ -6,6 +6,11 @@ import models.swipe
 import models.match
 import models.images
 from routes import auth, interactions, recommendations, profile, messages
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Create database tables on startup
 base.metadata.create_all(bind=engine)
@@ -19,13 +24,26 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# CORS configuration - use explicit origins for security
+# Default to localhost for development, can be overridden via environment
+default_origins = [
+    "http://localhost:3000",  # React dev server
+    "http://localhost:3001",  # Alternative React port
+    "http://127.0.0.1:3000", # Alternative localhost
+    "http://127.0.0.1:3001", # Alternative localhost
+]
+
+# Get origins from environment or use defaults
+cors_origins = os.getenv('CORS_ORIGINS', ','.join(default_origins)).split(',')
+cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+
 # Add CORS middleware for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=cors_origins,  # Explicit origins instead of wildcard
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicit methods
+    allow_headers=["*"],  # Keep headers flexible for auth tokens
 )
 
 # Include all API routers with proper prefixes

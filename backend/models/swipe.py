@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, Boolean, ForeignKey, DateTime, Index
 from sqlalchemy.sql import func
 from database import base
-import sqlalchemy
 
 class Swipe(base):
     __tablename__ = 'swipes'
@@ -12,4 +11,4 @@ class Swipe(base):
     isLike = Column(Boolean, nullable=False)
     createdAt = Column(DateTime, server_default=func.now())
 
-    __table_args__ = (sqlalchemy.index('idx_swipe_user_target', userId, targetId, unique=True),)
+    __table_args__ = (Index('idx_swipe_user_target', userId, targetId, unique=True),)
