@@ -18,6 +18,13 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || '/';
 
+  // Prefill email if passed from previous flow (e.g., after registration)
+  useEffect(() => {
+    if (location.state?.email) {
+      setEmail(location.state.email);
+    }
+  }, [location.state]);
+
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
