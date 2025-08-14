@@ -36,6 +36,7 @@
 
 .form-group {
   margin-bottom: 24px;
+  position: relative;
 }
 
 .form-group label {
