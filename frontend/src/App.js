@@ -7,6 +7,9 @@ import HomePage from './components/home/HomePage';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import Logout from './components/auth/Logout';
+import DiscoverPage from './components/discover/DiscoverPage';
+import MatchesPage from './components/matches/MatchesPage';
+import ProfilePage from './components/profile/ProfilePage';
 import ConversationsList from './components/messaging/ConversationsList';
 import ConversationDetail from './components/messaging/ConversationDetail';
 
@@ -24,17 +27,22 @@ function App() {
           
           <Route path="/discover" element={
             <ProtectedRoute>
-              <div>Discover/Swipe Page - Coming Soon</div>
+              <DiscoverPage />
             </ProtectedRoute>
           } />
           <Route path="/matches" element={
             <ProtectedRoute>
-              <div>Matches Page - Coming Soon</div>
+              <MatchesPage />
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
             <ProtectedRoute>
-              <div>Profile Page - Coming Soon</div>
+              <ProfilePage />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile/:userId" element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           } />
           
