@@ -17,9 +17,7 @@ const ProfilePage = () => {
 
   const isOwnProfile = !userId || userId === 'me';
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  
 
   const loadProfile = useCallback(async () => {
     try {
@@ -39,6 +37,10 @@ const ProfilePage = () => {
       setLoading(false);
     }
   }, [userId, token, isOwnProfile]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleEdit = () => {
     setIsEditing(true);
