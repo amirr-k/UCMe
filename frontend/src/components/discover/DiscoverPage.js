@@ -39,13 +39,13 @@ const DiscoverPage = () => {
 
     try {
       if (direction === 'right') {
-        const result = await interactionsService.swipeRight(currentUser.id, token);
+        const result = await interactionsService.likeProfile(currentUser.id, token);
         if (result.isMatch) {
           setIsMatch(true);
           setTimeout(() => setIsMatch(false), 2000);
         }
       } else {
-        await interactionsService.swipeLeft(currentUser.id, token);
+        await interactionsService.passProfile(currentUser.id, token);
       }
     } catch (err) {
       console.error('Swipe error:', err);

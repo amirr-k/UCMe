@@ -89,15 +89,15 @@ const MatchesPage = () => {
         {matches.map((match) => (
           <div key={match.id} className="match-card">
             <div className="match-image-container">
-              {match.images && match.images.length > 0 ? (
+              {match.user.images && match.user.images.length > 0 ? (
                 <img 
-                  src={match.images.find(img => img.isPrimary)?.imageUrl || match.images[0].imageUrl} 
-                  alt={match.name}
+                  src={match.user.images.find(img => img.isPrimary)?.imageUrl || match.user.images[0].imageUrl} 
+                  alt={match.user.name}
                   className="match-image"
                 />
               ) : (
                 <div className="match-image-placeholder">
-                  <span>{match.name?.charAt(0) || 'U'}</span>
+                  <span>{match.user.name?.charAt(0) || 'U'}</span>
                 </div>
               )}
               <div className="match-overlay">
@@ -108,7 +108,7 @@ const MatchesPage = () => {
                   💬 Message
                 </button>
                 <button 
-                  onClick={() => handleProfileClick(match.id)}
+                  onClick={() => handleProfileClick(match.user.id)}
                   className="profile-button"
                 >
                   👤 View Profile
@@ -117,17 +117,17 @@ const MatchesPage = () => {
             </div>
 
             <div className="match-info">
-              <h3>{match.name}, {match.age}</h3>
-              <p className="match-college">{match.college}</p>
-              <p className="match-major">{match.major}</p>
+              <h3>{match.user.name}, {match.user.age}</h3>
+              <p className="match-college">{match.user.college}</p>
+              <p className="match-major">{match.user.major}</p>
               
-              {match.interests && match.interests.length > 0 && (
+              {match.user.interests && match.user.interests.length > 0 && (
                 <div className="match-interests">
-                  {match.interests.slice(0, 3).map((interest, index) => (
+                  {match.user.interests.slice(0, 3).map((interest, index) => (
                     <span key={index} className="interest-tag">{interest}</span>
                   ))}
-                  {match.interests.length > 3 && (
-                    <span className="interest-more">+{match.interests.length - 3} more</span>
+                  {match.user.interests.length > 3 && (
+                    <span className="interest-more">+{match.user.interests.length - 3} more</span>
                   )}
                 </div>
               )}
@@ -140,7 +140,7 @@ const MatchesPage = () => {
                   Send Message
                 </button>
                 <button 
-                  onClick={() => handleProfileClick(match.id)}
+                  onClick={() => handleProfileClick(match.user.id)}
                   className="action-button secondary"
                 >
                   View Profile

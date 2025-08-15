@@ -77,13 +77,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
+
 
   const parseCsv = (text) => {
     if (!text) return [];
@@ -95,6 +89,24 @@ const ProfilePage = () => {
 
   const formatCsv = (array) => {
     return array ? array.join(', ') : '';
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    
+    // Handle array fields (interests, classes, otherColleges, majors)
+    if (['interests', 'classes', 'otherColleges', 'majors'].includes(name)) {
+      const arrayValue = value ? value.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
+      setFormData(prev => ({
+        ...prev,
+        [name]: arrayValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   if (loading) {

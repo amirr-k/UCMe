@@ -11,31 +11,35 @@ export const interactionsService = {
     return response.data;
   },
 
-  // Swipe right (like)
-  swipeRight: async (targetUserId, token) => {
-    const response = await axios.post(`${API_URL}/interactions/swipe`, {
-      targetUserId,
-      swipeType: 'right'
-    }, {
+  // Like a profile (swipe right)
+  likeProfile: async (targetUserId, token) => {
+    const response = await axios.post(`${API_URL}/interactions/like`, null, {
+      params: { targetId: targetUserId },
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
   },
 
-  // Swipe left (pass)
-  swipeLeft: async (targetUserId, token) => {
-    const response = await axios.post(`${API_URL}/interactions/swipe`, {
-      targetUserId,
-      swipeType: 'left'
-    }, {
+  // Pass a profile (swipe left)
+  passProfile: async (targetUserId, token) => {
+    const response = await axios.post(`${API_URL}/interactions/pass`, null, {
+      params: { targetId: targetUserId },
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
   },
 
-  // Get swipe history
-  getSwipeHistory: async (token) => {
-    const response = await axios.get(`${API_URL}/interactions/swipes`, {
+  // Get sent likes
+  getSentLikes: async (token) => {
+    const response = await axios.get(`${API_URL}/interactions/sentLikes`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.data;
+  },
+
+  // Get received likes
+  getReceivedLikes: async (token) => {
+    const response = await axios.get(`${API_URL}/interactions/receivedLikes`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
