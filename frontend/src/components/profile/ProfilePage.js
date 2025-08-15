@@ -60,10 +60,13 @@ const ProfilePage = () => {
       setSaving(true);
       let updatedProfile;
       
+      // Prepare data for backend - ensure arrays are properly formatted
+      const dataToSend = { ...formData };
+      
       if (editMode === 'profile') {
-        updatedProfile = await profileService.updateProfile(formData, token);
+        updatedProfile = await profileService.updateProfile(dataToSend, token);
       } else {
-        updatedProfile = await profileService.updatePreferences(formData, token);
+        updatedProfile = await profileService.updatePreferences(dataToSend, token);
       }
       
       setProfile(updatedProfile);
@@ -147,7 +150,7 @@ const ProfilePage = () => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1>{isOwnProfile ? 'My Profile' : `${profile.name}'s Profile`}</h1>
+        <h1>{isOwnProfile ? 'My Profile' : `${profile.name || 'Anonymous'}'s Profile`}</h1>
         {isOwnProfile && !isEditing && (
           <div className="profile-actions">
             <button onClick={handleEdit} className="edit-button">
@@ -179,125 +182,135 @@ const ProfilePage = () => {
 
           {editMode === 'profile' ? (
             <div className="form-section">
-              <div className="form-group">
-                <label htmlFor="name">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="name">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="Enter your name"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="college">UC Campus</label>
-                <input
-                  type="text"
-                  id="college"
-                  name="college"
-                  value={formData.college || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="college">UC Campus</label>
+                  <input
+                    type="text"
+                    id="college"
+                    name="college"
+                    value={formData.college || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., UCLA, UC Berkeley"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="school">School</label>
-                <input
-                  type="text"
-                  id="school"
-                  name="school"
-                  value={formData.school || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="school">School</label>
+                  <input
+                    type="text"
+                    id="school"
+                    name="school"
+                    value={formData.school || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., Engineering, Arts & Sciences"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="year">Graduation Year</label>
-                <input
-                  type="number"
-                  id="year"
-                  name="year"
-                  value={formData.year || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="year">Graduation Year</label>
+                  <input
+                    type="number"
+                    id="year"
+                    name="year"
+                    value={formData.year || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., 2024, 2025"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="major">Major</label>
-                <input
-                  type="text"
-                  id="major"
-                  name="major"
-                  value={formData.major || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="major">Major</label>
+                  <input
+                    type="text"
+                    id="major"
+                    name="major"
+                    value={formData.major || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., Computer Science, Biology"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="bio">Bio</label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  value={formData.bio || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  rows={4}
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="bio">Bio</label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    value={formData.bio || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    rows={4}
+                    placeholder="Tell us about yourself..."
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="interests">Interests (comma-separated)</label>
-                <input
-                  type="text"
-                  id="interests"
-                  name="interests"
-                  value={formatCsv(formData.interests)}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="interests">Interests (comma-separated)</label>
+                  <input
+                    type="text"
+                    id="interests"
+                    name="interests"
+                    value={formatCsv(formData.interests)}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., Hiking, Programming, Music"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="classes">Classes (comma-separated)</label>
-                <input
-                  type="text"
-                  id="classes"
-                  name="classes"
-                  value={formatCsv(formData.classes)}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="classes">Classes (comma-separated)</label>
+                  <input
+                    type="text"
+                    id="classes"
+                    name="classes"
+                    value={formatCsv(formData.classes)}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., CS 180, Math 31A"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="location">Current Location</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="location">Current Location</label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value={formData.location || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., Los Angeles, CA"
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="hometown">Hometown</label>
-                <input
-                  type="text"
-                  id="hometown"
-                  name="hometown"
-                  value={formData.hometown || ''}
-                  onChange={handleInputChange}
-                  className="form-input"
-                />
-              </div>
+                              <div className="form-group">
+                  <label htmlFor="hometown">Hometown</label>
+                  <input
+                    type="text"
+                    id="hometown"
+                    name="hometown"
+                    value={formData.hometown || ''}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    placeholder="e.g., San Diego, CA"
+                  />
+                </div>
             </div>
           ) : (
             <div className="form-section">
@@ -309,7 +322,7 @@ const ProfilePage = () => {
                     name="minAge"
                     value={formData.minAge || ''}
                     onChange={handleInputChange}
-                    placeholder="Min Age"
+                    placeholder="18"
                     className="form-input"
                   />
                   <input
@@ -317,7 +330,7 @@ const ProfilePage = () => {
                     name="maxAge"
                     value={formData.maxAge || ''}
                     onChange={handleInputChange}
-                    placeholder="Max Age"
+                    placeholder="25"
                     className="form-input"
                   />
                 </div>
@@ -405,34 +418,34 @@ const ProfilePage = () => {
               <div className="info-grid">
                 <div className="info-item">
                   <label>Name</label>
-                  <span>{profile.name}</span>
+                  <span>{profile.name || 'Not specified'}</span>
                 </div>
                 <div className="info-item">
                   <label>Age</label>
-                  <span>{profile.age}</span>
+                  <span>{profile.age || 'Not specified'}</span>
                 </div>
                 <div className="info-item">
                   <label>College</label>
-                  <span>{profile.college}</span>
+                  <span>{profile.college || 'Not specified'}</span>
                 </div>
                 <div className="info-item">
                   <label>School</label>
-                  <span>{profile.school}</span>
+                  <span>{profile.school || 'Not specified'}</span>
                 </div>
                 <div className="info-item">
                   <label>Major</label>
-                  <span>{profile.major}</span>
+                  <span>{profile.major || 'Not specified'}</span>
                 </div>
                 <div className="info-item">
                   <label>Graduation Year</label>
-                  <span>{profile.year}</span>
+                  <span>{profile.year || 'Not specified'}</span>
                 </div>
               </div>
             </div>
 
             <div className="profile-section">
               <h2>About Me</h2>
-              <p className="bio">{profile.bio}</p>
+              <p className="bio">{profile.bio || 'No bio available'}</p>
             </div>
 
             {profile.interests && profile.interests.length > 0 && (
@@ -462,11 +475,11 @@ const ProfilePage = () => {
               <div className="info-grid">
                 <div className="info-item">
                   <label>Current Location</label>
-                  <span>{profile.location}</span>
+                  <span>{profile.location || 'Not specified'}</span>
                 </div>
                 <div className="info-item">
                   <label>Hometown</label>
-                  <span>{profile.hometown}</span>
+                  <span>{profile.hometown || 'Not specified'}</span>
                 </div>
               </div>
             </div>
@@ -477,11 +490,11 @@ const ProfilePage = () => {
                 <div className="info-grid">
                   <div className="info-item">
                     <label>Age Range</label>
-                    <span>{profile.minAge} - {profile.maxAge}</span>
+                    <span>{profile.minAge || 'Not specified'} - {profile.maxAge || 'Not specified'}</span>
                   </div>
                   <div className="info-item">
                     <label>Preferred Gender</label>
-                    <span>{profile.genderPref}</span>
+                    <span>{profile.genderPref || 'Not specified'}</span>
                   </div>
                   {profile.otherColleges && profile.otherColleges.length > 0 && (
                     <div className="info-item">

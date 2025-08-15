@@ -117,9 +117,9 @@ const MatchesPage = () => {
             </div>
 
             <div className="match-info">
-              <h3>{match.user.name}, {match.user.age}</h3>
-              <p className="match-college">{match.user.college}</p>
-              <p className="match-major">{match.user.major}</p>
+              <h3>{match.user.name || 'Anonymous'}, {match.user.age || 'N/A'}</h3>
+              <p className="match-college">{match.user.college || 'N/A'}</p>
+              <p className="match-major">{match.user.major || 'N/A'}</p>
               
               {match.user.interests && match.user.interests.length > 0 && (
                 <div className="match-interests">

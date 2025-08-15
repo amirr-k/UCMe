@@ -128,7 +128,7 @@ const DiscoverPage = () => {
             <div className="profile-image">
               <img 
                 src={currentUser.images.find(img => img.isPrimary)?.imageUrl || currentUser.images[0].imageUrl} 
-                alt={currentUser.name}
+                alt={currentUser.name || 'User'}
               />
             </div>
           ) : (
@@ -138,10 +138,10 @@ const DiscoverPage = () => {
           )}
 
           <div className="profile-info">
-            <h2>{currentUser.name}, {currentUser.age}</h2>
-            <p className="college">{currentUser.college}</p>
-            <p className="major">{currentUser.major}</p>
-            <p className="bio">{currentUser.bio}</p>
+            <h2>{currentUser.name || 'Anonymous'}, {currentUser.age || 'N/A'}</h2>
+            <p className="college">{currentUser.college || 'N/A'}</p>
+            <p className="major">{currentUser.major || 'N/A'}</p>
+            <p className="bio">{currentUser.bio || 'No bio available'}</p>
             
             {currentUser.interests && currentUser.interests.length > 0 && (
               <div className="interests">
@@ -174,7 +174,7 @@ const DiscoverPage = () => {
       {isMatch && (
         <div className="match-notification">
           <h2>It's a Match! 🎉</h2>
-          <p>You and {currentUser.name} liked each other!</p>
+          <p>You and {currentUser.name || 'Anonymous'} liked each other!</p>
         </div>
       )}
 
