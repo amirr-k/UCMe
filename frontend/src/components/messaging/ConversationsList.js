@@ -53,10 +53,16 @@ function ConversationsList() {
                 className={`conversation-item ${unreadCount > 0 ? 'unread' : ''}`}
               >
                 <div className="conversation-avatar">
-                  <img 
-                    src={otherUser.profileImage || '/default-avatar.png'} 
-                    alt={`${otherUser.name}'s avatar`} 
-                  />
+                  {otherUser.images && otherUser.images.length > 0 ? (
+                    <img 
+                      src={otherUser.images.find(img => img.isPrimary)?.imageUrl || otherUser.images[0].imageUrl} 
+                      alt={`${otherUser.name || 'User'}'s avatar`} 
+                    />
+                  ) : (
+                    <div className="avatar-placeholder">
+                      <span>{otherUser.name?.charAt(0) || 'U'}</span>
+                    </div>
+                  )}
                   {unreadCount > 0 && (
                     <span className="unread-badge">{unreadCount}</span>
                   )}

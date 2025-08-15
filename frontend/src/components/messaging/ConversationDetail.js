@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { getConversation, sendMessage } from '../../services/messageService';
 import MessageInput from './MessageInput';
 import '../../styles/messaging/ConversationDetail.css';
@@ -7,6 +8,7 @@ import '../../styles/messaging/ConversationDetail.css';
 function ConversationDetail() {
   const { conversationId } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ function ConversationDetail() {
         {messages.map((message) => (
           <div 
             key={message.id} 
-            className={`message ${message.senderId === conversation.currentUserId ? 'sent' : 'received'}`}
+            className={`message ${message.senderId === currentUser?.id ? 'sent' : 'received'}`}
           >
             <div className="message-content">
               {message.content}
