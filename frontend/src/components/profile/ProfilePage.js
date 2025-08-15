@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { profileService } from '../../services/profileService';
@@ -6,7 +6,7 @@ import './ProfilePage.css';
 
 const ProfilePage = () => {
   const { userId } = useParams();
-  const { token, user: currentUser } = useAuth();
+  const { token } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,9 +19,9 @@ const ProfilePage = () => {
 
   useEffect(() => {
     loadProfile();
-  }, [userId]);
+  }, [loadProfile]);
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setLoading(true);
       let data;
@@ -38,7 +38,7 @@ const ProfilePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, token, isOwnProfile]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -81,14 +81,6 @@ const ProfilePage = () => {
   };
 
 
-
-  const parseCsv = (text) => {
-    if (!text) return [];
-    return text
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-  };
 
   const formatCsv = (array) => {
     return array ? array.join(', ') : '';
