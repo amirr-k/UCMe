@@ -113,7 +113,7 @@ def sendVerificationEmail(email: str, code: str):
         message = emails.Message(
             subject="Your UCMe Verification Code",
             html=htmlContent,
-            mail_from=(os.getenv('APP_NAME', 'UCMe'), smtp_user)
+            mail_from=("UCMe", "no-reply@amirkiadi.com")
         )
         
         response = message.send(

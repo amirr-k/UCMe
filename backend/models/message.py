@@ -13,9 +13,9 @@ class Conversation(base):
     createdAt = Column(DateTime, server_default=func.now())
     
     # Relationships
-    user1 = relationship("User", foreign_keys=[userId1], backref="conversations_as_user1")
-    user2 = relationship("User", foreign_keys=[userId2], backref="conversations_as_user2")
-    messages = relationship("Message", backref="conversation", cascade="all, delete-orphan")
+    user1 = relationship("User", foreign_keys=[userId1])
+    user2 = relationship("User", foreign_keys=[userId2])
+    messages = relationship("Message", cascade="all, delete-orphan")
     
     #Unique constraint to prevent duplicate conversations
     __table_args__ = (
@@ -35,5 +35,4 @@ class Message(base):
     createdAt = Column(DateTime, server_default=func.now())
     
     # Relationships
-    # Using backref from Conversation model instead of back_populates to avoid circular import
-    sender = relationship("User", foreign_keys=[senderId], backref="sent_messages")
+    sender = relationship("User", foreign_keys=[senderId])

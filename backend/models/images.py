@@ -13,6 +13,6 @@ class Image(base):
     isPrimary = Column(Boolean, default=False, nullable=False) # Whether this is the user's main profile picture
     createdAt = Column(DateTime, server_default=func.now())
     
-    user = relationship("User", backref="images")
+    user = relationship("User")
 
    

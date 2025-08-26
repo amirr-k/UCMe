@@ -38,13 +38,13 @@ class User(base):
     majors = Column(ARRAY(String), nullable=False) # Preferred majors for matches
 
     # Relationships to other models
-    images = relationship("Image", backref="user", cascade="all, delete-orphan") # User's profile images
+    images = relationship("Image", cascade="all, delete-orphan") # User's profile images
 
     #Interaction and Match Relationships
-    sentSwipes = relationship("Swipe", foreign_keys="Swipe.userId", backref="sender") # Likes sent by this user
-    receivedSwipes = relationship("Swipe", foreign_keys="Swipe.targetId", backref="target") # Likes received by this user
-    matchesAsUser1 = relationship("Match", foreign_keys="Match.userId1", backref="user1") # Matches where this user is user1
-    matchesAsUser2 = relationship("Match", foreign_keys="Match.userId2", backref="user2") # Matches where this user is user2
+    sentSwipes = relationship("Swipe", foreign_keys="Swipe.userId") # Likes sent by this user
+    receivedSwipes = relationship("Swipe", foreign_keys="Swipe.targetId") # Likes received by this user
+    matchesAsUser1 = relationship("Match", foreign_keys="Match.userId1") # Matches where this user is user1
+    matchesAsUser2 = relationship("Match", foreign_keys="Match.userId2") # Matches where this user is user2
     
 
     
