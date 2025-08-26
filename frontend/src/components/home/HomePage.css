@@ -17,13 +17,7 @@ html, body { background:#fff; margin:0; font-family: var(--font-body); }
   padding: clamp(24px, 5vw, 48px);
 }
 
-.home-wrap{
-  min-height: calc(100vh - 64px);
-  background: #ffffff;
-  display:flex;
-  align-items: center;
-  padding: clamp(24px, 5vw, 48px);
-}
+
 
 .home-grid{
   display:grid;
@@ -76,41 +70,6 @@ html, body { background:#fff; margin:0; font-family: var(--font-body); }
   display:flex; gap:12px; flex-wrap:wrap; align-items:center;
   margin: 8px 0 8px;
 }
-
-.login-button{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width: 150px;
-  padding: 12px 18px;
-  font-weight:700;
-  border-radius: 9999px;
-  text-decoration:none; 
-  border:none;
-  transition: transform .1s ease, background .2s;
-  cursor:pointer;
-}
-
-
-.login-button--blue{
-  background: var(--uc-blue);
-  color:#fff;
-}
-.login-button--blue:hover{
-  transform: translateY(-1px);
-  background: #001a33; 
-}
-
-
-.login-button--gold{
-  background: var(--uc-gold);
-  color:#1f2937; 
-}
-.login-button--gold:hover{
-  background:#e2a60a;
-  transform: translateY(-1px);
-}
-
 
 .home-visual{
   position:relative;

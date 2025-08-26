@@ -15,8 +15,8 @@ const HomePage = () => {
             Pick up where you left off! Discover, match, and message UC students.
           </p>
           <div className="home-actions">
-            <Link to="/discover" className="login-button">Continue to Discover</Link>
-            <Link to="/matches" className="login-button">View Matches</Link>
+            <Link to="/discover" className="home-button-blue">Continue to Discover</Link>
+            <Link to="/matches" className="home-button-gold">View Matches</Link>
           </div>
         </main>
       </div>
@@ -46,7 +46,7 @@ const HomePage = () => {
           <div className="home-actions">
             <Link to="/register" className="home-button-blue">Create account</Link>
             <Link to="/login" className="home-button-gold">Sign in</Link>
-        </div>
+          </div>
         </main>
 
         <aside className="home-visual" aria-hidden="true">
