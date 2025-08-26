@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { recommendationsService } from '../../services/recommendationsService';
 import { interactionsService } from '../../services/interactionsService';
@@ -15,63 +15,62 @@ const DiscoverPage = () => {
   const [swipeDirection, setSwipeDirection] = useState(null);
   const [isMatch, setIsMatch] = useState(false);
 
-  useEffect(() => {
-    loadRecommendations();
-  }, []);
-
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     try {
       setLoading(true);
       const data = await recommendationsService.getDiscoverRecommendations(token);
-      setRecommendations(data);
+      setRecommendations(Array.isArray(data) ? data : []);
       setCurrentIndex(0);
+      setError('');
     } catch (err) {
-      setError('Failed to load recommendations. Please try again.');
       console.error('Error loading recommendations:', err);
+      setError('Failed to load recommendations. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    loadRecommendations();
+  }, [loadRecommendations]);
 
   const handleSwipe = async (direction) => {
     if (currentIndex >= recommendations.length) return;
-
-    const currentUser = recommendations[currentIndex];
+    const curr = recommendations[currentIndex];
     setSwipeDirection(direction);
 
     try {
       if (direction === 'right') {
-        const result = await interactionsService.likeProfile(currentUser.id, token);
-        if (result.isMatch) {
+        const result = await interactionsService.likeProfile(curr.id, token);
+        if (result?.isMatch) {
           setIsMatch(true);
           setTimeout(() => setIsMatch(false), 2000);
         }
       } else {
-        await interactionsService.passProfile(currentUser.id, token);
+        await interactionsService.passProfile(curr.id, token);
       }
     } catch (err) {
       console.error('Swipe error:', err);
     }
 
-    // Move to next user after a short delay
     setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((i) => i + 1);
       setSwipeDirection(null);
     }, 300);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'ArrowLeft') {
-      handleSwipe('left');
-    } else if (e.key === 'ArrowRight') {
-      handleSwipe('right');
-    }
-  };
+  const handleKeyPress = useCallback(
+    (e) => {
+      if (e.key === 'ArrowLeft') handleSwipe('left');
+      if (e.key === 'ArrowRight') handleSwipe('right');
+    },
+    [currentIndex, recommendations.length] // keeps arrow keys responsive as you move through cards
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex]);
+  }, [handleKeyPress]);
 
   if (loading) {
     return (
@@ -113,8 +112,16 @@ const DiscoverPage = () => {
   }
 
   const currentUser = recommendations[currentIndex];
-  const primaryImage = currentUser.images?.find(img => img.isPrimary) || currentUser.images?.[0];
-  const imageSrc = primaryImage ? (primaryImage.imageUrl.startsWith('http') ? primaryImage.imageUrl : `${API_URL}/${primaryImage.imageUrl}`) : null;
+  const primaryImage =
+    currentUser.images?.find((img) => img.isPrimary) || currentUser.images?.[0];
+
+  let imageSrc = null;
+  if (primaryImage?.imageUrl) {
+    const raw = primaryImage.imageUrl;
+    imageSrc = raw.startsWith('http')
+      ? raw
+      : `${API_URL.replace(/\/+$/, '')}/${raw.replace(/^\/+/, '')}`;
+  }
 
   return (
     <div className="discover-container">
@@ -124,16 +131,13 @@ const DiscoverPage = () => {
       </div>
 
       <div className="card-container">
-        <div 
+        <div
           className={`profile-card ${swipeDirection ? `swipe-${swipeDirection}` : ''}`}
           key={currentUser.id}
         >
           {imageSrc ? (
             <div className="profile-image">
-              <img 
-                src={imageSrc}
-                alt={currentUser.name || 'User'}
-              />
+              <img src={imageSrc} alt={currentUser.name || 'User'} />
             </div>
           ) : (
             <div className="profile-image-placeholder">
@@ -142,21 +146,29 @@ const DiscoverPage = () => {
           )}
 
           <div className="profile-info">
-            <h2>{currentUser.name || 'Anonymous'}, {currentUser.age || 'N/A'}</h2>
+            <h2>
+              {currentUser.name || 'Anonymous'},{' '}
+              {currentUser.age ?? 'N/A'}
+            </h2>
             <p className="college">{currentUser.college || 'N/A'}</p>
             <p className="major">{currentUser.major || 'N/A'}</p>
+
             <div className="profile-info-scroll">
               <p className="bio">{currentUser.bio || 'No bio available'}</p>
-              {currentUser.classes && currentUser.classes.length > 0 && (
+
+              {Array.isArray(currentUser.classes) && currentUser.classes.length > 0 && (
                 <div className="classes">
                   <strong>Classes: </strong>
                   <span>{currentUser.classes.join(', ')}</span>
                 </div>
               )}
-              {currentUser.interests && currentUser.interests.length > 0 && (
+
+              {Array.isArray(currentUser.interests) && currentUser.interests.length > 0 && (
                 <div className="interests">
-                  {currentUser.interests.map((interest, index) => (
-                    <span key={index} className="interest-tag">{interest}</span>
+                  {currentUser.interests.map((interest, idx) => (
+                    <span key={`${interest}-${idx}`} className="interest-tag">
+                      {interest}
+                    </span>
                   ))}
                 </div>
               )}
@@ -164,14 +176,14 @@ const DiscoverPage = () => {
           </div>
 
           <div className="swipe-buttons">
-            <button 
+            <button
               className="swipe-button left"
               onClick={() => handleSwipe('left')}
               aria-label="Pass"
             >
               ✕
             </button>
-            <button 
+            <button
               className="swipe-button right"
               onClick={() => handleSwipe('right')}
               aria-label="Like"
@@ -192,4 +204,4 @@ const DiscoverPage = () => {
   );
 };
 
-export default DiscoverPage; 
+export default DiscoverPage;

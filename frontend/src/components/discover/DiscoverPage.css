@@ -6,7 +6,7 @@
 .discover-container {
   min-height: calc(100vh - 64px);
   padding: 20px;
-  background: #ffffff;
+  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,17 +40,15 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  background: white;
+  background: #fff;
   border-radius: 20px;
   box-shadow: var(--uc-shadow-lg);
   overflow: hidden;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform .3s ease, opacity .3s ease;
   cursor: grab;
 }
 
-.profile-card:active {
-  cursor: grabbing;
-}
+.profile-card:active { cursor: grabbing; }
 
 .profile-image {
   width: 100%;
@@ -72,13 +70,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #fff;
   font-size: 4rem;
   font-weight: bold;
 }
 
 .profile-info {
-  padding: 16px 20px 80px 20px; /* leave space for buttons */
+  padding: 16px 20px 80px;
   height: calc(100% - 360px);
   display: flex;
   flex-direction: column;
@@ -109,10 +107,7 @@
   margin-bottom: 12px;
 }
 
-.classes {
-  color: var(--uc-gray-700);
-  margin-bottom: 12px;
-}
+.classes { color: var(--uc-gray-700); margin-bottom: 12px; }
 
 .interests {
   display: flex;
@@ -125,7 +120,7 @@
   color: var(--uc-gray-800);
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: .8rem;
   font-weight: 600;
 }
 
@@ -145,85 +140,65 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
   box-shadow: var(--uc-shadow-md);
 }
 
 .swipe-button.left {
-  background: white;
+  background: #fff;
   color: #ef4444;
   border: 3px solid #ef4444;
 }
-
 .swipe-button.left:hover {
   background: #ef4444;
-  color: white;
+  color: #fff;
   transform: scale(1.1);
 }
 
 .swipe-button.right {
-  background: white;
+  background: #fff;
   color: #10b981;
   border: 3px solid #10b981;
 }
-
 .swipe-button.right:hover {
   background: #10b981;
-  color: white;
+  color: #fff;
   transform: scale(1.1);
 }
 
-/* Swipe animations */
 .swipe-left {
   transform: translateX(-100%) rotate(-20deg);
   opacity: 0;
 }
-
 .swipe-right {
   transform: translateX(100%) rotate(20deg);
   opacity: 0;
 }
 
-/* Match notification */
 .match-notification {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%,-50%);
   background: var(--uc-gradient-primary);
-  color: white;
+  color: #fff;
   padding: 30px;
   border-radius: 20px;
   text-align: center;
   box-shadow: var(--uc-shadow-xl);
   z-index: 1000;
-  animation: matchPop 0.5s ease-out;
+  animation: matchPop .5s ease-out;
 }
 
-.match-notification h2 {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.match-notification p {
-  font-size: 1.1rem;
-}
+.match-notification h2 { font-size: 2rem; margin-bottom: 10px; }
+.match-notification p { font-size: 1.1rem; }
 
 @keyframes matchPop {
-  0% {
-    transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
+  0% { transform: translate(-50%,-50%) scale(.5); opacity: 0; }
+  50% { transform: translate(-50%,-50%) scale(1.1); }
+  100% { transform: translate(-50%,-50%) scale(1); opacity: 1; }
 }
 
-/* Loading and error states */
 .loading-spinner, .error-message, .no-more-profiles {
   text-align: center;
   padding: 60px 20px;
@@ -246,67 +221,31 @@
 
 .retry-button, .refresh-button {
   background: var(--uc-gradient-primary);
-  color: white;
+  color: #fff;
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   margin-top: 20px;
-  transition: transform 0.2s ease;
+  transition: transform .2s ease;
 }
-
 .retry-button:hover, .refresh-button:hover {
   transform: translateY(-2px);
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
-  .discover-container {
-    padding: 16px;
-  }
-  
-  .discover-header h1 {
-    font-size: 2rem;
-  }
-  
-  .card-container {
-    max-width: 350px;
-    height: 560px;
-  }
-  
-  .profile-image {
-    height: 320px;
-  }
-  
-  .profile-info {
-    height: calc(100% - 320px);
-    padding: 12px 16px 80px 16px;
-  }
-  
-  .swipe-button {
-    width: 50px;
-    height: 50px;
-    font-size: 1.2rem;
-  }
+  .discover-container { padding: 16px; }
+  .discover-header h1 { font-size: 2rem; }
+  .card-container { max-width: 350px; height: 560px; }
+  .profile-image { height: 320px; }
+  .profile-info { height: calc(100% - 320px); padding: 12px 16px 80px; }
+  .swipe-button { width: 50px; height: 50px; font-size: 1.2rem; }
 }
 
 @media (max-width: 480px) {
-  .card-container {
-    max-width: 320px;
-    height: 520px;
-  }
-  
-  .profile-image {
-    height: 300px;
-  }
-  
-  .profile-info {
-    height: calc(100% - 300px);
-    padding: 12px 14px 80px 14px;
-  }
-  
-  .profile-info h2 {
-    font-size: 1.3rem;
-  }
-} 
+  .card-container { max-width: 320px; height: 520px; }
+  .profile-image { height: 300px; }
+  .profile-info { height: calc(100% - 300px); padding: 12px 14px 80px; }
+  .profile-info h2 { font-size: 1.3rem; }
+}
