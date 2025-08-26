@@ -1,56 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { interactionsService } from '../../services/interactionsService';
-import { createConversation } from '../../services/messageService';
-import './MatchesPage.css';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { interactionsService } from "../../services/interactionsService";
+import { createConversation } from "../../services/messageService";
+import "./MatchesPage.css";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-
-const MatchesPage = () => {
+export default function MatchesPage() {
   const { token } = useAuth();
   const navigate = useNavigate();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    loadMatches();
-  }, []);
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await interactionsService.getMatches(token);
+        setMatches(data);
+      } catch (err) {
+        console.error("load matches error", err);
+        setError("Couldn't load matches");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [token]);
 
-  const loadMatches = async () => {
+  const messageClick = async (id) => {
     try {
-      setLoading(true);
-      const data = await interactionsService.getMatches(token);
-      setMatches(data);
-    } catch (err) {
-      setError('Failed to load matches. Please try again.');
-      console.error('Error loading matches:', err);
-    } finally {
-      setLoading(false);
+      const convo = await createConversation(id);
+      navigate(`/messages/${convo.id}`);
+    } catch {
+      navigate("/messages");
     }
-  };
-
-  const handleMessageClick = async (otherUserId) => {
-    try {
-      const conversation = await createConversation(otherUserId);
-      navigate(`/messages/${conversation.id}`);
-    } catch (err) {
-      console.error('Error starting conversation:', err);
-      navigate('/messages');
-    }
-  };
-
-  const handleProfileClick = (userId) => {
-    navigate(`/profile/${userId}`);
   };
 
   if (loading) {
     return (
       <div className="matches-container">
         <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Loading your matches...</p>
+          <div className="spinner" />
+          <p>Loading matches...</p>
         </div>
       </div>
     );
@@ -61,25 +53,22 @@ const MatchesPage = () => {
       <div className="matches-container">
         <div className="error-message">
           <p>{error}</p>
-          <button onClick={loadMatches} className="retry-button">
-            Try Again
+          <button onClick={() => window.location.reload()} className="retry-button">
+            Retry
           </button>
         </div>
       </div>
     );
   }
 
-  if (matches.length === 0) {
+  if (!matches.length) {
     return (
       <div className="matches-container">
         <div className="no-matches">
           <div className="no-matches-icon">💔</div>
-          <h2>No Matches Yet</h2>
-          <p>Start swiping to find your perfect match!</p>
-          <button 
-            onClick={() => navigate('/discover')} 
-            className="discover-button"
-          >
+          <h2>No Matches</h2>
+          <p>Try Discover to start swiping</p>
+          <button onClick={() => navigate("/discover")} className="discover-button">
             Go to Discover
           </button>
         </div>
@@ -91,57 +80,52 @@ const MatchesPage = () => {
     <div className="matches-container">
       <div className="matches-header">
         <h1>Your Matches</h1>
-        <p>{matches.length} {matches.length === 1 ? 'match' : 'matches'} found</p>
+        <p>{matches.length} total</p>
       </div>
 
       <div className="matches-grid">
-        {matches.map((match) => {
-          const primary = match.user.images?.find(img => img.isPrimary) || match.user.images?.[0];
-          const src = primary ? (primary.imageUrl.startsWith('http') ? primary.imageUrl : `${API_URL}/${primary.imageUrl}`) : null;
+        {matches.map((m) => {
+          const img = m.user.images?.find((i) => i.isPrimary) || m.user.images?.[0];
+          const src = img ? (img.imageUrl.startsWith("http") ? img.imageUrl : `http://localhost:8000/${img.imageUrl}`) : null;
+
           return (
-            <div key={match.id} className="match-card">
+            <div key={m.id} className="match-card">
               <div className="match-image-container">
                 {src ? (
-                  <img 
-                    src={src}
-                    alt={match.user.name}
-                    className="match-image"
-                  />
+                  <img src={src} alt={m.user.name} className="match-image" />
                 ) : (
                   <div className="match-image-placeholder">
-                    <span>{match.user.name?.charAt(0) || 'U'}</span>
+                    <span>{m.user.name?.charAt(0) || "U"}</span>
                   </div>
                 )}
               </div>
 
               <div className="match-info">
-                <h3>{match.user.name || 'Anonymous'}, {match.user.age || 'N/A'}</h3>
-                <p className="match-college">{match.user.college || 'N/A'}</p>
-                <p className="match-major">{match.user.major || 'N/A'}</p>
-                
-                {match.user.interests && match.user.interests.length > 0 && (
+                <h3>
+                  {m.user.name || "Anonymous"}, {m.user.age || "N/A"}
+                </h3>
+                <p className="match-college">{m.user.college || "N/A"}</p>
+                <p className="match-major">{m.user.major || "N/A"}</p>
+
+                {m.user.interests?.length > 0 && (
                   <div className="match-interests">
-                    {match.user.interests.slice(0, 3).map((interest, index) => (
-                      <span key={index} className="interest-tag">{interest}</span>
+                    {m.user.interests.slice(0, 3).map((int, i) => (
+                      <span key={i} className="interest-tag">
+                        {int}
+                      </span>
                     ))}
-                    {match.user.interests.length > 3 && (
-                      <span className="interest-more">+{match.user.interests.length - 3} more</span>
+                    {m.user.interests.length > 3 && (
+                      <span className="interest-more">+{m.user.interests.length - 3} more</span>
                     )}
                   </div>
                 )}
 
                 <div className="match-actions">
-                  <button 
-                    onClick={() => handleMessageClick(match.user.id)}
-                    className="action-button primary"
-                  >
-                    Send Message
+                  <button onClick={() => messageClick(m.user.id)} className="action-button primary">
+                    Message
                   </button>
-                  <button 
-                    onClick={() => handleProfileClick(match.user.id)}
-                    className="action-button secondary"
-                  >
-                    View Profile
+                  <button onClick={() => navigate(`/profile/${m.user.id}`)} className="action-button secondary">
+                    View
                   </button>
                 </div>
               </div>
@@ -151,6 +135,4 @@ const MatchesPage = () => {
       </div>
     </div>
   );
-};
-
-export default MatchesPage; 
+}
