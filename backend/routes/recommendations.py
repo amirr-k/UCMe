@@ -50,14 +50,15 @@ async def getRecommendations(
     if currentUser.otherColleges and len(currentUser.otherColleges) > 0:
         collegeFilter = or_(
             User.college == currentUser.college,
-            User.otherColleges.contains([User.college])
+            User.otherColleges.contains([currentUser.college])
         )
         preferenceFilters.append(collegeFilter)
     else:
         preferenceFilters.append(User.college == currentUser.college)
     
     if currentUser.majors and len(currentUser.majors) > 0:
-        preferenceFilters.append(User.majors.contains([User.major]))
+        # Match if the other user's majors overlaps with current user's preferred majors
+        preferenceFilters.append(User.majors.overlap(currentUser.majors))
     
     if preferenceFilters:
         query = query.filter(and_(*preferenceFilters))

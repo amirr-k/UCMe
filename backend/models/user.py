@@ -1,4 +1,5 @@
-from sqlalchemy import ARRAY, Column, Integer, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from database import base
 from sqlalchemy.sql import func
