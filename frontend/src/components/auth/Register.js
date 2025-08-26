@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/authService';
-import './Login.css'; // Reuse styles
+import './Login.css';
 
 const UC_CAMPUSES = [
   'UC Berkeley',
@@ -24,7 +24,6 @@ const Register = () => {
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
 
-  // Step 1 + 2
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
 
@@ -212,7 +211,7 @@ const Register = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@uc.edu"
+                placeholder="Example: amirkiadi@ucsd.edu"
                 required
                 className="form-input"
                 disabled={loading}

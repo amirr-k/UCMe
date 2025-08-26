@@ -61,7 +61,7 @@ const HomePage = () => {
           <div className="feature">
             <div className="feature-icon">💝</div>
             <h3>Smart Matching</h3>
-            <p>AI-powered recommendations based on your preferences</p>
+            <p>Match with students who share your academic journey and life goals</p>
           </div>
           <div className="feature">
             <div className="feature-icon">🔒</div>

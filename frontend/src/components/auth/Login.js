@@ -11,6 +11,22 @@ const Login = () => {
   const [error, setError] = useState('');
   const [step, setStep] = useState('email'); // 'email' | 'verify'
   const [countdown, setCountdown] = useState(0);
+  
+
+  const emailInputRef = React.useRef(null);
+  const codeInputRef = React.useRef(null);
+
+  useEffect(() => {
+    if (step === 'email') emailInputRef.current?.focus();
+    if (step === 'verify') codeInputRef.current?.focus();
+  }, [step]);
+
+  const onEmailKeyDown = (e) => { if (e.key === 'Enter') handleRequestCode(e); };
+  const onCodeInput = (e) => {
+    // keep only digits, max 6
+    const onlyDigits = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setVerificationCode(onlyDigits);
+  };
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -90,27 +106,34 @@ const Login = () => {
       <div className="login-card">
         <h1>Welcome to UCMe</h1>
         <p className="subtitle">Connect with UC students</p>
-
-        {error && <div className="error-message">{error}</div>}
-
-        {step === 'email' ? (
+  
+        {error && (
+          <div className="error-message" role="alert" aria-live="polite">
+            {error}
+          </div>
+        )}
+  
+        {step === "email" ? (
           <form onSubmit={handleRequestCode} className="login-form">
             <div className="form-group">
               <label htmlFor="email">UC Email</label>
               <input
+                ref={emailInputRef}
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@uc.edu"
+                onKeyDown={onEmailKeyDown}
+                placeholder="Example: amirkiadi@ucsd.edu"
+                autoComplete="email"
                 required
                 className="form-input"
                 disabled={loading}
               />
             </div>
-
-            <button type="submit" disabled={loading} className="login-button">
-              {loading ? 'Sending Code...' : 'Get Verification Code'}
+  
+            <button type="submit" disabled={loading || !email} className="login-button">
+              {loading ? "Sending Code..." : "Get Verification Code"}
             </button>
           </form>
         ) : (
@@ -118,17 +141,19 @@ const Login = () => {
             <div className="form-group">
               <label htmlFor="verificationCode">Verification Code</label>
               <input
-                type="text"
+                ref={codeInputRef}
                 id="verificationCode"
+                inputMode="numeric"
+                autoComplete="one-time-code"
                 value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
+                onChange={onCodeInput}
                 placeholder="Enter 6-digit code"
                 required
                 className="form-input"
                 disabled={loading}
                 maxLength={6}
               />
-              <div className="verification-help">
+              <div className="verification-help" aria-live="polite">
                 <p>A verification code has been sent to {email}</p>
                 <button
                   type="button"
@@ -136,7 +161,7 @@ const Login = () => {
                   className="resend-button"
                   disabled={countdown > 0 || loading}
                 >
-                  {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend code'}
+                  {countdown > 0 ? `Resend code in ${countdown}s` : "Resend code"}
                 </button>
                 <button
                   type="button"
@@ -148,13 +173,17 @@ const Login = () => {
                 </button>
               </div>
             </div>
-
-            <button type="submit" disabled={loading || verificationCode.length !== 6} className="login-button">
-              {loading ? 'Verifying...' : 'Sign In'}
+  
+            <button
+              type="submit"
+              disabled={loading || verificationCode.length !== 6}
+              className="login-button"
+            >
+              {loading ? "Verifying..." : "Sign In"}
             </button>
           </form>
         )}
-
+  
         <div className="login-footer">
           <p>
             Don't have an account? <a href="/register">Sign up</a>

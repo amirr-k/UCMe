@@ -173,7 +173,7 @@ const DiscoverPage = () => {
 
       {isMatch && (
         <div className="match-notification">
-          <h2>It's a Match! 🎉</h2>
+          <h2>It's a Match!</h2>
           <p>You and {currentUser.name || 'Anonymous'} liked each other!</p>
         </div>
       )}
