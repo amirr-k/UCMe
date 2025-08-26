@@ -198,7 +198,7 @@ const Register = () => {
     <div className="login-container">
       <div className="login-card">
         <h1>Join UCMe</h1>
-        <p className="subtitle">Create your account to start matching</p>
+        <p className="subtitle">Create an account to start matching!</p>
 
         {error && <div className="error-message">{error}</div>}
 

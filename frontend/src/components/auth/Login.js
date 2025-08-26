@@ -105,7 +105,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-card">
         <h1>Welcome to UCMe</h1>
-        <p className="subtitle">Connect with UC students</p>
+        <p className="subtitle">Connect with University of California students!</p>
   
         {error && (
           <div className="error-message" role="alert" aria-live="polite">
