@@ -5,6 +5,8 @@ import { interactionsService } from '../../services/interactionsService';
 import { createConversation } from '../../services/messageService';
 import './MatchesPage.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const MatchesPage = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
@@ -93,69 +95,59 @@ const MatchesPage = () => {
       </div>
 
       <div className="matches-grid">
-        {matches.map((match) => (
-          <div key={match.id} className="match-card">
-            <div className="match-image-container">
-              {match.user.images && match.user.images.length > 0 ? (
-                <img 
-                  src={match.user.images.find(img => img.isPrimary)?.imageUrl || match.user.images[0].imageUrl} 
-                  alt={match.user.name}
-                  className="match-image"
-                />
-              ) : (
-                <div className="match-image-placeholder">
-                  <span>{match.user.name?.charAt(0) || 'U'}</span>
+        {matches.map((match) => {
+          const primary = match.user.images?.find(img => img.isPrimary) || match.user.images?.[0];
+          const src = primary ? (primary.imageUrl.startsWith('http') ? primary.imageUrl : `${API_URL}/${primary.imageUrl}`) : null;
+          return (
+            <div key={match.id} className="match-card">
+              <div className="match-image-container">
+                {src ? (
+                  <img 
+                    src={src}
+                    alt={match.user.name}
+                    className="match-image"
+                  />
+                ) : (
+                  <div className="match-image-placeholder">
+                    <span>{match.user.name?.charAt(0) || 'U'}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="match-info">
+                <h3>{match.user.name || 'Anonymous'}, {match.user.age || 'N/A'}</h3>
+                <p className="match-college">{match.user.college || 'N/A'}</p>
+                <p className="match-major">{match.user.major || 'N/A'}</p>
+                
+                {match.user.interests && match.user.interests.length > 0 && (
+                  <div className="match-interests">
+                    {match.user.interests.slice(0, 3).map((interest, index) => (
+                      <span key={index} className="interest-tag">{interest}</span>
+                    ))}
+                    {match.user.interests.length > 3 && (
+                      <span className="interest-more">+{match.user.interests.length - 3} more</span>
+                    )}
+                  </div>
+                )}
+
+                <div className="match-actions">
+                  <button 
+                    onClick={() => handleMessageClick(match.user.id)}
+                    className="action-button primary"
+                  >
+                    Send Message
+                  </button>
+                  <button 
+                    onClick={() => handleProfileClick(match.user.id)}
+                    className="action-button secondary"
+                  >
+                    View Profile
+                  </button>
                 </div>
-              )}
-              <div className="match-overlay">
-                <button 
-                  onClick={() => handleMessageClick(match.user.id)}
-                  className="message-button"
-                >
-                  💬 Message
-                </button>
-                <button 
-                  onClick={() => handleProfileClick(match.user.id)}
-                  className="profile-button"
-                >
-                  👤 View Profile
-                </button>
               </div>
             </div>
-
-            <div className="match-info">
-              <h3>{match.user.name || 'Anonymous'}, {match.user.age || 'N/A'}</h3>
-              <p className="match-college">{match.user.college || 'N/A'}</p>
-              <p className="match-major">{match.user.major || 'N/A'}</p>
-              
-              {match.user.interests && match.user.interests.length > 0 && (
-                <div className="match-interests">
-                  {match.user.interests.slice(0, 3).map((interest, index) => (
-                    <span key={index} className="interest-tag">{interest}</span>
-                  ))}
-                  {match.user.interests.length > 3 && (
-                    <span className="interest-more">+{match.user.interests.length - 3} more</span>
-                  )}
-                </div>
-              )}
-
-              <div className="match-actions">
-                <button 
-                  onClick={() => handleMessageClick(match.user.id)}
-                  className="action-button primary"
-                >
-                  Send Message
-                </button>
-                <button 
-                  onClick={() => handleProfileClick(match.user.id)}
-                  className="action-button secondary"
-                >
-                  View Profile
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from database import get_db
 from models.user import User
 from schemas.user import UserResponse, UserProfileUpdate, UserPreferencesUpdate
@@ -10,9 +10,13 @@ router = APIRouter(tags=["Profile"])
 
 @router.get("/me", response_model=UserResponse)
 async def getCurrentUserProfile(
-    currentUser: User = Depends(getCurrentUser)
+    currentUser: User = Depends(getCurrentUser),
+    db: Session = Depends(get_db)
 ):
-    return currentUser
+    user = db.query(User).options(joinedload(User.images)).filter(User.id == currentUser.id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
 
 @router.put("/update", response_model=UserResponse)
 async def updateProfile(
@@ -39,7 +43,9 @@ async def updateProfile(
     try:
         db.commit()
         db.refresh(user)
-        return user
+        # Return with images eager loaded
+        user_with_images = db.query(User).options(joinedload(User.images)).filter(User.id == user.id).first()
+        return user_with_images
     except IntegrityError as e:
         db.rollback()
         print(f"Profile update error: {e}")
@@ -73,7 +79,8 @@ async def updatePreferences(
     try:
         db.commit()
         db.refresh(user)
-        return user
+        user_with_images = db.query(User).options(joinedload(User.images)).filter(User.id == user.id).first()
+        return user_with_images
     except IntegrityError as e:
         db.rollback()
         print(f"Preferences update error: {e}")
@@ -90,7 +97,7 @@ async def viewOtherUserProfile(
 ):
     
     # Find the user profile
-    user = db.query(User).filter(
+    user = db.query(User).options(joinedload(User.images)).filter(
         User.id == userId,
         User.moderationStatus == "Approved"
     ).first()

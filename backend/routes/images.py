@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from database import get_db
 from models.images import Image
@@ -15,18 +15,17 @@ router = APIRouter(tags=["Images"])
 
 # Configuration for image storage
 UPLOAD_DIR = "uploads/images"
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".jfif"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 # Ensure upload directory exists
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def is_valid_image_file(filename: str) -> bool:
-    """Check if the uploaded file has a valid image extension"""
     return any(filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS)
 
 def save_image_file(file: UploadFile, user_id: int) -> str:
-    """Save uploaded image file and return the file path"""
+
     # Generate unique filename
     file_extension = os.path.splitext(file.filename)[1].lower()
     unique_filename = f"{user_id}_{uuid.uuid4()}{file_extension}"
@@ -41,11 +40,10 @@ def save_image_file(file: UploadFile, user_id: int) -> str:
 @router.post("/upload", response_model=ImageResponse)
 async def uploadImage(
     file: UploadFile = File(...),
-    isPrimary: bool = False,
+    isPrimary: bool = Form(False),
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Upload a new image for the current user"""
     
     # Validate file type
     if not is_valid_image_file(file.filename):
@@ -54,15 +52,33 @@ async def uploadImage(
             detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
         )
     
-    # Check file size
-    if file.size and file.size > MAX_FILE_SIZE:
+    # Enforce maximum of 3 images per user
+    current_count = db.query(Image).filter(Image.userId == currentUser.id).count()
+    if current_count >= 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum of 3 images allowed"
+        )
+    
+    # Check file size safely
+    try:
+        current_pos = file.file.tell()
+    except Exception:
+        current_pos = 0
+    try:
+        file.file.seek(0, os.SEEK_END)
+        size_bytes = file.file.tell()
+    finally:
+        file.file.seek(current_pos, os.SEEK_SET)
+    if size_bytes and size_bytes > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File too large. Maximum size: {MAX_FILE_SIZE // (1024*1024)}MB"
         )
     
     try:
-        # Save the file
+        # Save the file (ensure pointer at start)
+        file.file.seek(0)
         file_path = save_image_file(file, currentUser.id)
         
         # If this is set as primary, unset other primary images
@@ -103,7 +119,6 @@ async def getMyImages(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Get all images for the current user"""
     images = db.query(Image).filter(Image.userId == currentUser.id).all()
     return images
 
@@ -113,7 +128,6 @@ async def setPrimaryImage(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Set an image as the primary profile picture"""
     
     # Get the image
     image = db.query(Image).filter(
@@ -154,7 +168,6 @@ async def deleteImage(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Delete an image"""
     
     # Get the image
     image = db.query(Image).filter(
@@ -201,7 +214,6 @@ async def updateImage(
     currentUser: User = Depends(getCurrentUser),
     db: Session = Depends(get_db)
 ):
-    """Update image metadata (like isPrimary status)"""
     
     # Get the image
     image = db.query(Image).filter(

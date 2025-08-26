@@ -4,6 +4,8 @@ import { recommendationsService } from '../../services/recommendationsService';
 import { interactionsService } from '../../services/interactionsService';
 import './DiscoverPage.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const DiscoverPage = () => {
   const { token } = useAuth();
   const [recommendations, setRecommendations] = useState([]);
@@ -111,6 +113,8 @@ const DiscoverPage = () => {
   }
 
   const currentUser = recommendations[currentIndex];
+  const primaryImage = currentUser.images?.find(img => img.isPrimary) || currentUser.images?.[0];
+  const imageSrc = primaryImage ? (primaryImage.imageUrl.startsWith('http') ? primaryImage.imageUrl : `${API_URL}/${primaryImage.imageUrl}`) : null;
 
   return (
     <div className="discover-container">
@@ -124,10 +128,10 @@ const DiscoverPage = () => {
           className={`profile-card ${swipeDirection ? `swipe-${swipeDirection}` : ''}`}
           key={currentUser.id}
         >
-          {currentUser.images && currentUser.images.length > 0 ? (
+          {imageSrc ? (
             <div className="profile-image">
               <img 
-                src={currentUser.images.find(img => img.isPrimary)?.imageUrl || currentUser.images[0].imageUrl} 
+                src={imageSrc}
                 alt={currentUser.name || 'User'}
               />
             </div>

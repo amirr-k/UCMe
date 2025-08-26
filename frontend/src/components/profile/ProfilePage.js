@@ -4,6 +4,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { profileService } from '../../services/profileService';
 import './ProfilePage.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+const resolveImageSrc = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/')) return `${API_URL}${url}`;
+  return `${API_URL}/${url}`;
+};
+
 const ProfilePage = () => {
   const { userId } = useParams();
   const { token } = useAuth();
@@ -107,21 +116,64 @@ const ProfilePage = () => {
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    // Enforce max of 3 images total
+    const currentCount = profile.images?.length || 0;
+    const availableSlots = Math.max(0, 3 - currentCount);
+    const toUpload = files.slice(0, availableSlots);
+    if (toUpload.length === 0) {
+      setError('Maximum of 3 images allowed.');
+      e.target.value = '';
+      return;
+    }
+
     try {
       setUploading(true);
-      const uploaded = await profileService.uploadImage(file, token, true);
-      // Ensure it's primary (backend already unsets others if isPrimary true)
-      await profileService.setPrimaryImage(uploaded.id, token);
+      for (let i = 0; i < toUpload.length; i++) {
+        const isFirst = currentCount === 0 && i === 0; // first-ever upload becomes primary
+        await profileService.uploadImage(toUpload[i], token, isFirst);
+      }
       await loadProfile();
     } catch (err) {
       console.error('Image upload failed:', err);
-      setError('Failed to upload image.');
+      setError(err?.response?.data?.detail || 'Failed to upload image.');
     } finally {
       setUploading(false);
-      // reset input value to allow re-upload of the same file if desired
       e.target.value = '';
+    }
+  };
+
+  const onSetPrimary = async (imageId) => {
+    try {
+      await profileService.setPrimaryImage(imageId, token);
+      await loadProfile();
+    } catch (err) {
+      console.error('Failed to set primary image:', err);
+      setError('Failed to set primary image.');
+    }
+  };
+
+  const onRemoveImage = async (image) => {
+    // Prevent deleting the only primary image if it's the only image
+    const total = profile.images?.length || 0;
+    if (total === 1 && image.isPrimary) {
+      setError('You must set a new primary image before removing this one.');
+      return;
+    }
+    // If removing primary but there are others, require user to set another primary first
+    if (image.isPrimary && total > 1) {
+      setError('Please set another image as primary before removing the current primary.');
+      return;
+    }
+
+    try {
+      await profileService.deleteImage(image.id, token);
+      await loadProfile();
+    } catch (err) {
+      console.error('Failed to delete image:', err);
+      setError('Failed to delete image.');
     }
   };
 
@@ -166,16 +218,12 @@ const ProfilePage = () => {
         <h1>{isOwnProfile ? 'My Profile' : `${profile.name || 'Anonymous'}'s Profile`}</h1>
         {isOwnProfile && !isEditing && (
           <div className="profile-actions">
-            <label className="upload-button">
-              {uploading ? 'Uploading...' : 'Upload Profile Image'}
-              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+            <button className="edit-button" onClick={handleEditPreferences}>Edit Preferences</button>
+            <button className="edit-preferences-button" onClick={handleEdit}>Edit Profile</button>
+            <label className="edit-button">
+              {uploading ? 'Uploading...' : 'Upload Profile Images'}
+              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} multiple />
             </label>
-            <button onClick={handleEdit} className="edit-button">
-              Edit Profile
-            </button>
-            <button onClick={handleEditPreferences} className="edit-preferences-button">
-              Edit Preferences
-            </button>
           </div>
         )}
       </div>
@@ -412,12 +460,21 @@ const ProfilePage = () => {
           <div className="profile-images">
             {profile.images && profile.images.length > 0 ? (
               <div className="image-gallery">
-                {profile.images.map((image, index) => (
-                  <div key={index} className={`image-item ${image.isPrimary ? 'primary' : ''}`}>
-                    <img src={image.imageUrl} alt={`${profile.name} ${index + 1}`} />
-                    {image.isPrimary && <span className="primary-badge">Primary</span>}
-                  </div>
-                ))}
+                {profile.images.map((image, index) => {
+                  const src = resolveImageSrc(image.imageUrl);
+                  return (
+                    <div key={index} className={`image-item ${image.isPrimary ? 'primary' : ''}`}>
+                      <img src={src} alt={`${profile.name} ${index + 1}`} />
+                      {image.isPrimary && <span className="primary-badge">Primary</span>}
+                      {isOwnProfile && !image.isPrimary && (
+                        <div className="image-overlay">
+                          <button className="overlay-button" onClick={() => onSetPrimary(image.id)}>Set as Primary</button>
+                          <button className="overlay-button danger" onClick={() => onRemoveImage(image)}>Remove</button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="no-images">

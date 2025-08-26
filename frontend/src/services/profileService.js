@@ -62,5 +62,12 @@ export const profileService = {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
+  },
+
+  deleteImage: async (imageId, token) => {
+    const response = await axios.delete(`${API_URL}/images/${imageId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.data;
   }
 };
