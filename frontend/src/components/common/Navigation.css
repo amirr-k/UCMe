@@ -57,19 +57,16 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.user-menu-trigger:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  border: none;
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
-  background: var(--uc-gradient-primary);
+  background: var(--uc-blue);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -85,15 +82,12 @@
   font-size: 0.875rem;
 }
 
+
 .dropdown-arrow {
   color: var(--uc-white);
   font-size: 0.75rem;
-  transition: transform 0.2s ease;
 }
 
-.user-menu-trigger:hover .dropdown-arrow {
-  transform: rotate(180deg);
-}
 
 .user-menu {
   position: absolute;

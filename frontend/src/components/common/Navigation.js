@@ -1,55 +1,42 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import './Navigation.css';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import "./Navigation.css";
 
-const Navigation = () => {
+export default function Navigation() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+
+  if (!isAuthenticated) return null;
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
-    setShowUserMenu(false);
+    navigate("/login");
   };
-
-  if (!isAuthenticated) {
-    return null; // Don't show navigation for unauthenticated users
-  }
 
   return (
     <nav className="navigation">
       <div className="nav-container">
-        <Link to="/discover" className="nav-logo">
-          UCMe
-        </Link>
-        
+        <Link to="/discover" className="nav-logo">UCMe</Link>
+
         <div className="nav-links">
-          <Link to="/discover" className="nav-link">
-            Discover
-          </Link>
-          <Link to="/matches" className="nav-link">
-            Matches
-          </Link>
-          <Link to="/messages" className="nav-link">
-            Messages
-          </Link>
+          <Link to="/discover" className="nav-link">Discover</Link>
+          <Link to="/matches" className="nav-link">Matches</Link>
+          <Link to="/messages" className="nav-link">Messages</Link>
         </div>
-        
+
         <div className="nav-user">
-          <div 
-            className="user-menu-trigger"
-            onClick={() => setShowUserMenu(!showUserMenu)}
+          <button 
+            className="user-menu-trigger" 
+            onClick={() => setOpen(!open)}
           >
-            <div className="user-avatar">
-              {user?.name?.charAt(0) || 'U'}
-            </div>
-            <span className="user-name">{user?.name || 'User'}</span>
+            <div className="user-avatar">{user?.name?.[0] ?? "U"}</div>
+            <span className="user-name">{user?.name ?? "User"}</span>
             <span className="dropdown-arrow">▼</span>
-          </div>
-          
-          {showUserMenu && (
+          </button>
+
+          {open && (
             <div className="user-menu">
               <div className="user-menu-header">
                 <strong>{user?.email}</strong>
@@ -57,11 +44,11 @@ const Navigation = () => {
                   <div className="user-university">{user.university}</div>
                 )}
               </div>
-              <div className="user-menu-divider"></div>
-              <Link to="/profile" className="user-menu-item">
-                Edit Profile
-              </Link>
-              <button onClick={handleLogout} className="user-menu-item logout">
+              <Link to="/profile" className="user-menu-item">Edit Profile</Link>
+              <button 
+                onClick={handleLogout} 
+                className="user-menu-item logout"
+              >
                 Sign Out
               </button>
             </div>
@@ -70,6 +57,4 @@ const Navigation = () => {
       </div>
     </nav>
   );
-};
-
-export default Navigation; 
+}
