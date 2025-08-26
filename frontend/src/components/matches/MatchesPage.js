@@ -157,10 +157,6 @@ const MatchesPage = () => {
           </div>
         ))}
       </div>
-
-      <div className="matches-footer">
-        <p>Keep the conversation going! 💕</p>
-      </div>
     </div>
   );
 };
