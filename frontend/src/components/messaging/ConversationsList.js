@@ -45,12 +45,13 @@ function ConversationsList() {
         <div className="conversations-list">
           {conversations.map(conversation => {
             const { id, otherUser, lastMessage, unreadCount, lastMessageAt } = conversation;
+            const showUnread = unreadCount > 0;
             
             return (
               <Link 
                 to={`/messages/${id}`} 
                 key={id} 
-                className={`conversation-item ${unreadCount > 0 ? 'unread' : ''}`}
+                className={`conversation-item ${showUnread ? 'unread' : ''}`}
               >
                 <div className="conversation-avatar">
                   {otherUser.images && otherUser.images.length > 0 ? (
@@ -63,7 +64,7 @@ function ConversationsList() {
                       <span>{otherUser.name?.charAt(0) || 'U'}</span>
                     </div>
                   )}
-                  {unreadCount > 0 && (
+                  {showUnread && (
                     <span className="unread-badge">{unreadCount}</span>
                   )}
                 </div>

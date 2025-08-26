@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { profileService } from '../services/profileService';
 
 const AuthContext = createContext();
 
@@ -18,12 +19,26 @@ export const AuthProvider = ({ children }) => {
   // Check if user is authenticated
   const isAuthenticated = !!token && !!user;
 
+  const fetchAndSetUser = async (authToken, fallbackUser) => {
+    try {
+      const fullProfile = await profileService.getMyProfile(authToken);
+      setUser(fullProfile);
+      localStorage.setItem('user', JSON.stringify(fullProfile));
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      if (fallbackUser) {
+        setUser(fallbackUser);
+        localStorage.setItem('user', JSON.stringify(fallbackUser));
+      }
+    }
+  };
+
   // Login function
   const login = (userData, authToken) => {
-    setUser(userData);
     setToken(authToken);
     localStorage.setItem('token', authToken);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // Attempt to fetch full profile; fall back to provided userData
+    fetchAndSetUser(authToken, userData);
   };
 
   // Logout function
@@ -41,11 +56,18 @@ export const AuthProvider = ({ children }) => {
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
         
-        if (storedToken && storedUser) {
-          // Here you could validate the token with your backend
-          // For now, we'll trust the stored data
-          setUser(JSON.parse(storedUser));
+        if (storedToken) {
           setToken(storedToken);
+          if (storedUser) {
+            const parsed = JSON.parse(storedUser);
+            setUser(parsed);
+            // If stored user lacks essential fields, refresh from API
+            if (!parsed?.id || !parsed?.name) {
+              await fetchAndSetUser(storedToken, parsed);
+            }
+          } else {
+            await fetchAndSetUser(storedToken, null);
+          }
         }
       } catch (error) {
         console.error('Auth check failed:', error);

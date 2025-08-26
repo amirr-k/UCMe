@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { getConversation, sendMessage } from '../../services/messageService';
+import { getConversation, sendMessage, markAsRead } from '../../services/messageService';
 import MessageInput from './MessageInput';
 import '../../styles/messaging/ConversationDetail.css';
 
 function ConversationDetail() {
   const { conversationId } = useParams();
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +31,21 @@ function ConversationDetail() {
     if (conversationId) {
       fetchConversation();
     }
+  }, [conversationId]);
+
+  useEffect(() => {
+    const markConversationRead = async () => {
+      try {
+        if (conversationId) {
+          await markAsRead(conversationId);
+          setConversation(prev => prev ? { ...prev, unreadCount: 0 } : prev);
+        }
+      } catch (err) {
+        console.error('Error marking conversation as read:', err);
+      }
+    };
+
+    markConversationRead();
   }, [conversationId]);
 
   const handleSendMessage = async (content) => {
@@ -61,7 +74,7 @@ function ConversationDetail() {
         {messages.map((message) => (
           <div 
             key={message.id} 
-            className={`message ${message.senderId === currentUser?.id ? 'sent' : 'received'}`}
+            className={`message ${message.senderId === conversation.otherUser?.id ? 'received' : 'sent'}`}
           >
             <div className="message-content">
               {message.content}
