@@ -1,6 +1,6 @@
 :root {
-  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-heading: 'Clash Display', 'Inter', sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --font-heading: "Merriweather", Georgia, serif;
 }
 
 .login-container {

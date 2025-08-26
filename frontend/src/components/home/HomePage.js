@@ -8,83 +8,53 @@ const HomePage = () => {
 
   if (isAuthenticated) {
     return (
-      <div className="home-container">
-        <div className="home-content">
-          <h1>Welcome back, {user?.name || 'User'}! 👋</h1>
-          <p className="home-subtitle">
-            Ready to discover new connections at {user?.university || 'UC'}?
+      <div className="home-wrap">
+        <main className="home-hero">
+          <h1 className="home-title">Welcome back{user?.name ? `, ${user.name}` : ''}.</h1>
+          <p className="home-lead">
+            Pick up where you left off! Discover, match, and message UC students.
           </p>
-          
           <div className="home-actions">
-            <Link to="/discover" className="home-button primary">
-              Start Discovering
-            </Link>
-            <Link to="/matches" className="home-button secondary">
-              View Matches
-            </Link>
+            <Link to="/discover" className="login-button">Continue to Discover</Link>
+            <Link to="/matches" className="login-button">View Matches</Link>
           </div>
-          
-          <div className="home-stats">
-            <div className="stat-card">
-              <div className="stat-number">0</div>
-              <div className="stat-label">New Matches</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Unread Messages</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">0</div>
-              <div className="stat-label">Profile Views</div>
-            </div>
-          </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="home-container">
-      <div className="home-content">
-        <h1>Welcome to UCMe</h1>
-        <p className="home-subtitle">
-          The dating app exclusively for UC students. Connect with fellow students 
-          who share your academic journey and life goals.
-        </p>
-        
-        <div className="home-features">
-          <div className="feature">
-            <div className="feature-icon">🎓</div>
-            <h3>UC Students Only</h3>
-            <p>Connect with verified UC students from all campuses</p>
-          </div>
-          <div className="feature">
-            <div className="feature-icon">💝</div>
-            <h3>Smart Matching</h3>
-            <p>Match with students who share your academic journey and life goals</p>
-          </div>
-          <div className="feature">
-            <div className="feature-icon">🔒</div>
-            <h3>Safe & Secure</h3>
-            <p>Your privacy and safety are our top priorities</p>
-          </div>
+    <div className="home-wrap">
+      <div className="home-grid">
+        <main className="home-hero">
+          <h1 className="home-title">Meet UC students, not strangers.</h1>
+          <p className="home-lead">
+            UCMe is a University of California networking platform. 
+          </p>
+          <p className="home-lead">
+            Verify with your .edu email and connect with thousands of students.
+            Made by UC students, for UC students.
+          </p>
+
+          <ul className="home-bullets" aria-label="Highlights">
+            <li> • University of California email verification</li>
+            <li> • Preferential, intelligent matching system</li>
+            <li> • No bots, no spam, no fake profiles</li>
+            <li> • Best of all, no subscription fee</li>
+          </ul>
+
+          <div className="home-actions">
+            <Link to="/register" className="home-button-blue">Create account</Link>
+            <Link to="/login" className="home-button-gold">Sign in</Link>
         </div>
-        
-        <div className="home-actions">
-          <Link to="/register" className="home-button primary">
-            Get Started
-          </Link>
-          <Link to="/login" className="home-button secondary">
-            Sign In
-          </Link>
-        </div>
-        
-        <div className="home-footer">
-          <p>Join thousands of UC students finding meaningful connections</p>
-        </div>
+        </main>
+
+        <aside className="home-visual" aria-hidden="true">
+          <img src="/images/University_of_California_Logo.svg" alt="University of California logo" />
+        </aside>
       </div>
     </div>
   );
 };
 
-export default HomePage; 
+export default HomePage;
