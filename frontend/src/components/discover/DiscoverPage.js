@@ -141,15 +141,22 @@ const DiscoverPage = () => {
             <h2>{currentUser.name || 'Anonymous'}, {currentUser.age || 'N/A'}</h2>
             <p className="college">{currentUser.college || 'N/A'}</p>
             <p className="major">{currentUser.major || 'N/A'}</p>
-            <p className="bio">{currentUser.bio || 'No bio available'}</p>
-            
-            {currentUser.interests && currentUser.interests.length > 0 && (
-              <div className="interests">
-                {currentUser.interests.map((interest, index) => (
-                  <span key={index} className="interest-tag">{interest}</span>
-                ))}
-              </div>
-            )}
+            <div className="profile-info-scroll">
+              <p className="bio">{currentUser.bio || 'No bio available'}</p>
+              {currentUser.classes && currentUser.classes.length > 0 && (
+                <div className="classes">
+                  <strong>Classes: </strong>
+                  <span>{currentUser.classes.join(', ')}</span>
+                </div>
+              )}
+              {currentUser.interests && currentUser.interests.length > 0 && (
+                <div className="interests">
+                  {currentUser.interests.map((interest, index) => (
+                    <span key={index} className="interest-tag">{interest}</span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="swipe-buttons">
@@ -177,11 +184,6 @@ const DiscoverPage = () => {
           <p>You and {currentUser.name || 'Anonymous'} liked each other!</p>
         </div>
       )}
-
-      <div className="discover-footer">
-        <p>Use arrow keys or click buttons to swipe</p>
-        <p>← Pass | Like →</p>
-      </div>
     </div>
   );
 };

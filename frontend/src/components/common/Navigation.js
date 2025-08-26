@@ -35,9 +35,6 @@ const Navigation = () => {
           <Link to="/messages" className="nav-link">
             Messages
           </Link>
-          <Link to="/profile" className="nav-link">
-            Profile
-          </Link>
         </div>
         
         <div className="nav-user">
@@ -63,9 +60,6 @@ const Navigation = () => {
               <div className="user-menu-divider"></div>
               <Link to="/profile" className="user-menu-item">
                 Edit Profile
-              </Link>
-              <Link to="/settings" className="user-menu-item">
-                Settings
               </Link>
               <button onClick={handleLogout} className="user-menu-item logout">
                 Sign Out

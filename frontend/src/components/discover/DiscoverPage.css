@@ -32,7 +32,7 @@
   position: relative;
   width: 100%;
   max-width: 400px;
-  height: 600px;
+  height: 640px;
   margin-bottom: 30px;
 }
 
@@ -54,7 +54,7 @@
 
 .profile-image {
   width: 100%;
-  height: 400px;
+  height: 360px;
   overflow: hidden;
   position: relative;
 }
@@ -67,7 +67,7 @@
 
 .profile-image-placeholder {
   width: 100%;
-  height: 400px;
+  height: 360px;
   background: var(--uc-gradient-primary);
   display: flex;
   align-items: center;
@@ -78,33 +78,40 @@
 }
 
 .profile-info {
-  padding: 20px;
-  height: 200px;
+  padding: 16px 20px 80px 20px; /* leave space for buttons */
+  height: calc(100% - 360px);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 6px;
 }
 
 .profile-info h2 {
   color: var(--uc-gray-800);
   font-size: 1.5rem;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .college, .major {
   color: var(--uc-blue);
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+.profile-info-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 
 .bio {
   color: var(--uc-gray-600);
   line-height: 1.5;
-  margin-bottom: 16px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.classes {
+  color: var(--uc-gray-700);
+  margin-bottom: 12px;
 }
 
 .interests {
@@ -124,7 +131,7 @@
 
 .swipe-buttons {
   position: absolute;
-  bottom: 20px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -253,17 +260,6 @@
   transform: translateY(-2px);
 }
 
-.discover-footer {
-  text-align: center;
-  color: var(--uc-gray-600);
-  margin-top: 20px;
-}
-
-.discover-footer p {
-  margin: 4px 0;
-  font-size: 0.9rem;
-}
-
 /* Responsive design */
 @media (max-width: 768px) {
   .discover-container {
@@ -276,16 +272,16 @@
   
   .card-container {
     max-width: 350px;
-    height: 550px;
+    height: 560px;
   }
   
   .profile-image {
-    height: 350px;
+    height: 320px;
   }
   
   .profile-info {
-    height: 200px;
-    padding: 16px;
+    height: calc(100% - 320px);
+    padding: 12px 16px 80px 16px;
   }
   
   .swipe-button {
@@ -298,7 +294,7 @@
 @media (max-width: 480px) {
   .card-container {
     max-width: 320px;
-    height: 500px;
+    height: 520px;
   }
   
   .profile-image {
@@ -306,8 +302,8 @@
   }
   
   .profile-info {
-    height: 200px;
-    padding: 12px;
+    height: calc(100% - 300px);
+    padding: 12px 14px 80px 14px;
   }
   
   .profile-info h2 {

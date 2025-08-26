@@ -14,6 +14,7 @@ const ProfilePage = () => {
   const [editMode, setEditMode] = useState('profile'); // 'profile' or 'preferences'
   const [formData, setFormData] = useState({});
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const isOwnProfile = !userId || userId === 'me';
 
@@ -83,8 +84,6 @@ const ProfilePage = () => {
     }
   };
 
-
-
   const formatCsv = (array) => {
     return array ? array.join(', ') : '';
   };
@@ -104,6 +103,25 @@ const ProfilePage = () => {
         ...prev,
         [name]: type === 'checkbox' ? checked : value
       }));
+    }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const uploaded = await profileService.uploadImage(file, token, true);
+      // Ensure it's primary (backend already unsets others if isPrimary true)
+      await profileService.setPrimaryImage(uploaded.id, token);
+      await loadProfile();
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      setError('Failed to upload image.');
+    } finally {
+      setUploading(false);
+      // reset input value to allow re-upload of the same file if desired
+      e.target.value = '';
     }
   };
 
@@ -148,6 +166,10 @@ const ProfilePage = () => {
         <h1>{isOwnProfile ? 'My Profile' : `${profile.name || 'Anonymous'}'s Profile`}</h1>
         {isOwnProfile && !isEditing && (
           <div className="profile-actions">
+            <label className="upload-button">
+              {uploading ? 'Uploading...' : 'Upload Profile Image'}
+              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
+            </label>
             <button onClick={handleEdit} className="edit-button">
               Edit Profile
             </button>
@@ -177,135 +199,135 @@ const ProfilePage = () => {
 
           {editMode === 'profile' ? (
             <div className="form-section">
-                              <div className="form-group">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="Enter your name"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="name">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="Enter your name"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="college">UC Campus</label>
-                  <input
-                    type="text"
-                    id="college"
-                    name="college"
-                    value={formData.college || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., UCLA, UC Berkeley"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="college">UC Campus</label>
+                <input
+                  type="text"
+                  id="college"
+                  name="college"
+                  value={formData.college || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., UCLA, UC Berkeley"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="school">School</label>
-                  <input
-                    type="text"
-                    id="school"
-                    name="school"
-                    value={formData.school || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., Engineering, Arts & Sciences"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="school">School</label>
+                <input
+                  type="text"
+                  id="school"
+                  name="school"
+                  value={formData.school || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., Engineering, Arts & Sciences"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="year">Graduation Year</label>
-                  <input
-                    type="number"
-                    id="year"
-                    name="year"
-                    value={formData.year || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., 2024, 2025"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="year">Graduation Year</label>
+                <input
+                  type="number"
+                  id="year"
+                  name="year"
+                  value={formData.year || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., 2024, 2025"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="major">Major</label>
-                  <input
-                    type="text"
-                    id="major"
-                    name="major"
-                    value={formData.major || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., Computer Science, Biology"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="major">Major</label>
+                <input
+                  type="text"
+                  id="major"
+                  name="major"
+                  value={formData.major || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., Computer Science, Biology"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="bio">Bio</label>
-                  <textarea
-                    id="bio"
-                    name="bio"
-                    value={formData.bio || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    rows={4}
-                    placeholder="Tell us about yourself..."
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="bio">Bio</label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  value={formData.bio || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  rows={4}
+                  placeholder="Tell us about yourself..."
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="interests">Interests (comma-separated)</label>
-                  <input
-                    type="text"
-                    id="interests"
-                    name="interests"
-                    value={formatCsv(formData.interests)}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., Hiking, Programming, Music"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="interests">Interests (comma-separated)</label>
+                <input
+                  type="text"
+                  id="interests"
+                  name="interests"
+                  value={formatCsv(formData.interests)}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., Hiking, Programming, Music"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="classes">Classes (comma-separated)</label>
-                  <input
-                    type="text"
-                    id="classes"
-                    name="classes"
-                    value={formatCsv(formData.classes)}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., CS 180, Math 31A"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="classes">Classes (comma-separated)</label>
+                <input
+                  type="text"
+                  id="classes"
+                  name="classes"
+                  value={formatCsv(formData.classes)}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., CS 180, Math 31A"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="location">Current Location</label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    value={formData.location || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., Los Angeles, CA"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="location">Current Location</label>
+                <input
+                  type="text"
+                  id="location"
+                  name="location"
+                  value={formData.location || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., Los Angeles, CA"
+                />
+              </div>
 
-                              <div className="form-group">
-                  <label htmlFor="hometown">Hometown</label>
-                  <input
-                    type="text"
-                    id="hometown"
-                    name="hometown"
-                    value={formData.hometown || ''}
-                    onChange={handleInputChange}
-                    className="form-input"
-                    placeholder="e.g., San Diego, CA"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="hometown">Hometown</label>
+                <input
+                  type="text"
+                  id="hometown"
+                  name="hometown"
+                  value={formData.hometown || ''}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  placeholder="e.g., San Diego, CA"
+                />
+              </div>
             </div>
           ) : (
             <div className="form-section">

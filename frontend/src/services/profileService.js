@@ -45,5 +45,22 @@ export const profileService = {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
+  },
+
+  uploadImage: async (file, token, isPrimary = true) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('isPrimary', String(isPrimary));
+    const response = await axios.post(`${API_URL}/images/upload`, formData, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  setPrimaryImage: async (imageId, token) => {
+    const response = await axios.put(`${API_URL}/images/${imageId}/set-primary`, {}, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.data;
   }
 };
