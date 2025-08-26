@@ -38,7 +38,7 @@ UCMe-Matchmaking-Application/
 - Python 3.8+
 - PostgreSQL database
 - Redis server (for verification codes)
-- SMTP email service (Gmail, SendGrid, etc.)
+- SMTP email service (SMTP2Go recommended, Gmail, SendGrid, etc.)
 
 ### 1. Setup Backend
 
@@ -56,10 +56,13 @@ Copy `env.example` to `.env` and configure:
 DATABASE_URL=postgresql://username:password@localhost/ucme
 
 # Email Configuration (for verification codes)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
+# SMTP2Go (recommended):
+SMTP_HOST=mail.smtp2go.com
+SMTP_PORT=2525
+SMTP_USER=your-email@example.com
+SMTP_PASSWORD=your-api-key
+SMTP_TLS=true
+SMTP_SSL=false
 APP_NAME=UCMe
 
 # Redis Configuration (for storing verification codes)
@@ -73,6 +76,17 @@ REDIS_PORT=6379
 cd backend
 uvicorn main:app --reload
 ```
+
+### Email Setup with SMTP2Go
+
+For reliable email delivery, we recommend using SMTP2Go:
+
+1. **Sign up** at [SMTP2Go.com](https://www.smtp2go.com/) (1000 emails/month free)
+2. **Get credentials** from Settings → API Keys
+3. **Configure** your `.env` file with SMTP2Go settings
+4. **Test** email sending with the provided test script
+
+See `backend/SMTP2GO_SETUP.md` for detailed configuration instructions.
 
 ### Registration & Email Verification
 - `POST /auth/send-verification` - Send magic code to email

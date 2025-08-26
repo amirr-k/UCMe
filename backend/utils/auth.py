@@ -77,16 +77,27 @@ def sendVerificationEmail(email: str, code: str):
     if not all([smtp_host, smtp_user, smtp_password]):
         logger.info(f"SMTP not configured. Verification code for {email}: {code}")
         logger.info("To enable email sending, set SMTP_HOST, SMTP_USER, and SMTP_PASSWORD environment variables")
+        logger.info("For SMTP2Go: SMTP_HOST=mail.smtp2go.com, SMTP_PORT=2525")
         return True  # Return True to avoid breaking the flow
     
     try:
+        # Get SMTP configuration with defaults
+        smtp_port = int(os.getenv('SMTP_PORT', 587))
+        smtp_tls = os.getenv('SMTP_TLS', 'true').lower() == 'true'
+        smtp_ssl = os.getenv('SMTP_SSL', 'false').lower() == 'true'
+        
         smtpOptions = {
             "host": smtp_host,
-            "port": int(os.getenv('SMTP_PORT', 587)),
+            "port": smtp_port,
             "user": smtp_user,
             "password": smtp_password,
-            "tls": True,
         }
+        
+        # Configure TLS/SSL based on port and settings
+        if smtp_ssl:
+            smtpOptions["ssl"] = True
+        elif smtp_tls:
+            smtpOptions["tls"] = True
         
         htmlContent = f"""
         <html>
