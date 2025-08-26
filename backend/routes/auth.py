@@ -82,7 +82,8 @@ async def register(userData: UserCreate, db: Session = Depends(get_db)):
         maxAge=userData.maxAge,  
         genderPref=userData.genderPref,
         otherColleges=userData.otherColleges,
-        majors=userData.majors
+        majors=userData.majors,
+        moderationStatus="Approved"
     )
     
     try:

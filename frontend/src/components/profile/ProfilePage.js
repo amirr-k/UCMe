@@ -21,12 +21,13 @@ const ProfilePage = () => {
 
   const loadProfile = useCallback(async () => {
     try {
+      setError('');
       setLoading(true);
       let data;
       if (isOwnProfile) {
-        data = await profileService.getCurrentProfile(token);
+        data = await profileService.getMyProfile(token);
       } else {
-        data = await profileService.viewOtherProfile(userId, token);
+        data = await profileService.viewProfile(userId, token);
       }
       setProfile(data);
       setFormData(data);
@@ -513,3 +514,4 @@ const ProfilePage = () => {
 };
 
 export default ProfilePage; 
+ 

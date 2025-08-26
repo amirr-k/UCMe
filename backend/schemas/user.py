@@ -2,6 +2,24 @@ from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 from datetime import datetime
 
+# Normalization helpers
+_ALLOWED_GENDERS = {"male": "Male", "m": "Male", "man": "Male", "men": "Male",
+                    "female": "Female", "f": "Female", "woman": "Female", "women": "Female"}
+_ALLOWED_PREFS = {**_ALLOWED_GENDERS, "everyone": "Everyone", "any": "Everyone", "all": "Everyone"}
+
+def _normalize_gender(value: str) -> str:
+    if not isinstance(value, str):
+        return value
+    key = value.strip().lower()
+    return _ALLOWED_GENDERS.get(key, value.title())
+
+
+def _normalize_gender_pref(value: str) -> str:
+    if not isinstance(value, str):
+        return value
+    key = value.strip().lower()
+    return _ALLOWED_PREFS.get(key, value.title())
+
 # Base user schema with common fields
 class UserBase(BaseModel):
     email: EmailStr
@@ -41,6 +59,14 @@ class UserCreate(BaseModel):
             raise ValueError('maxAge must be greater than or equal to minAge')
         return v
 
+    # Normalize gender and genderPref
+    @validator('gender')
+    def normalize_gender(cls, v):
+        return _normalize_gender(v)
+
+    @validator('genderPref')
+    def normalize_gender_pref(cls, v):
+        return _normalize_gender_pref(v)
 
 
 #Necessary for updating user profile
@@ -65,6 +91,13 @@ class UserProfileUpdate(BaseModel):
         #Ensures that None values are excluded when converting to dict
         exclude_none = True
 
+    # Normalize on update
+    @validator('gender')
+    def normalize_gender_update(cls, v):
+        if v is None:
+            return v
+        return _normalize_gender(v)
+
 #For updating preferences
 class UserPreferencesUpdate(BaseModel):
     minAge: Optional[int] = Field(None, ge=18, le=100)
@@ -80,6 +113,13 @@ class UserPreferencesUpdate(BaseModel):
                 raise ValueError('maxAge must be greater than or equal to minAge')
         return v
     
+    # Normalize on update
+    @validator('genderPref')
+    def normalize_gender_pref_update(cls, v):
+        if v is None:
+            return v
+        return _normalize_gender_pref(v)
+
     class Config:
         #Ensures that None values are excluded when converting to dict
         exclude_none = True
@@ -99,6 +139,46 @@ class UserResponse(BaseModel):
     id: int
     email: EmailStr
     name: str
+    college: str
+    school: str
+    year: int # Graduation year
+    age: int # Current age
+    gender: str
+    major: str
+    createdAt: datetime # Account creation timestamp
+    bio: str
+    interests: List[str]
+    classes: List[str]
+    lookingFor: str
+    smokes: bool
+    drinks: bool
+    pronouns: str
+    location: str
+    hometown: str
+    minAge: int # Minimum preferred age for matches
+    maxAge: int # Maximum preferred age for matches
+    genderPref: str # Preferred gender for matches
+    otherColleges: List[str] # Other UC campuses user wants to see
+    majors: List[str] # Preferred majors for matches
+    images: List[ImageResponse] = [] # User's profile images
+    
+    class Config:
+        from_attributes = True
+
+# Schema for email verification requests (login and registration)
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+    verificationCode: str # 6-digit verification code sent to email
+
+# Schema for email verification responses
+class EmailVerificationResponse(BaseModel):
+    message: str # Status message for user
+    verified: bool # Whether verification was successful
+
+# Schema for JWT authentication tokens
+class Token(BaseModel):
+    accessToken: str # JWT token for authenticated requests
+    tokenType: str # Token type (always "bearer")
     college: str
     school: str
     year: int # Graduation year

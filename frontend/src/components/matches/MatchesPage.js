@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { interactionsService } from '../../services/interactionsService';
+import { createConversation } from '../../services/messageService';
 import './MatchesPage.css';
 
 const MatchesPage = () => {
@@ -28,8 +29,14 @@ const MatchesPage = () => {
     }
   };
 
-  const handleMessageClick = (matchId) => {
-    navigate(`/messages/${matchId}`);
+  const handleMessageClick = async (otherUserId) => {
+    try {
+      const conversation = await createConversation(otherUserId);
+      navigate(`/messages/${conversation.id}`);
+    } catch (err) {
+      console.error('Error starting conversation:', err);
+      navigate('/messages');
+    }
   };
 
   const handleProfileClick = (userId) => {
@@ -102,7 +109,7 @@ const MatchesPage = () => {
               )}
               <div className="match-overlay">
                 <button 
-                  onClick={() => handleMessageClick(match.id)}
+                  onClick={() => handleMessageClick(match.user.id)}
                   className="message-button"
                 >
                   💬 Message
@@ -134,7 +141,7 @@ const MatchesPage = () => {
 
               <div className="match-actions">
                 <button 
-                  onClick={() => handleMessageClick(match.id)}
+                  onClick={() => handleMessageClick(match.user.id)}
                   className="action-button primary"
                 >
                   Send Message

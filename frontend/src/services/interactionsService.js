@@ -45,3 +45,4 @@ export const interactionsService = {
     return response.data;
   }
 }; 
+ 

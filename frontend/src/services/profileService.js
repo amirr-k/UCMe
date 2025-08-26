@@ -2,36 +2,48 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
+const normalize = (value) => {
+  if (!value || typeof value !== 'string') return value;
+  const key = value.trim().toLowerCase();
+  const map = {
+    male: 'Male', m: 'Male', men: 'Male', man: 'Male',
+    female: 'Female', f: 'Female', women: 'Female', woman: 'Female',
+    everyone: 'Everyone', any: 'Everyone', all: 'Everyone'
+  };
+  return map[key] || value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+};
+
 export const profileService = {
-  // Get current user profile
-  getCurrentProfile: async (token) => {
+  getMyProfile: async (token) => {
     const response = await axios.get(`${API_URL}/profile/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
   },
 
-  // Update profile
   updateProfile: async (profileData, token) => {
-    const response = await axios.put(`${API_URL}/profile/update`, profileData, {
+    const payload = { ...profileData };
+    if (payload.gender) payload.gender = normalize(payload.gender);
+
+    const response = await axios.put(`${API_URL}/profile/update`, payload, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
   },
 
-  // Update preferences
   updatePreferences: async (preferencesData, token) => {
-    const response = await axios.put(`${API_URL}/profile/preferences`, preferencesData, {
+    const payload = { ...preferencesData };
+    if (payload.genderPref) payload.genderPref = normalize(payload.genderPref);
+    const response = await axios.put(`${API_URL}/profile/preferences`, payload, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
   },
 
-  // View other user profile
-  viewOtherProfile: async (userId, token) => {
+  viewProfile: async (userId, token) => {
     const response = await axios.get(`${API_URL}/profile/viewProfile/${userId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.data;
   }
-}; 
+};

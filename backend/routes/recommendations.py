@@ -37,7 +37,7 @@ async def getRecommendations(
     
     
     if currentUser.genderPref and currentUser.genderPref != "Everyone":
-        preferenceFilters.append(User.gender == currentUser.genderPref)
+        preferenceFilters.append(User.gender == currentUser.genderPref)  # already normalized via schema
     
     if currentUser.minAge and currentUser.maxAge:
         preferenceFilters.append(
@@ -91,6 +91,15 @@ async def getRecommendations(
     query = query.filter(and_(*mutualCompatibilityFilters))
     
     allMatchingUsers = query.all()
+
+    # Fallback: if strict filters yield no results, return broader pool
+    if not allMatchingUsers:
+        fallbackQuery = db.query(User).filter(
+            User.id != currentUser.id,
+            User.moderationStatus == "Approved",
+            not_(User.id.in_(likedUserIds))
+        )
+        allMatchingUsers = fallbackQuery.all()
     
     random.shuffle(allMatchingUsers)
     
@@ -168,7 +177,7 @@ async def getDiscoveryStats(
     if currentUser.otherColleges and len(currentUser.otherColleges) > 0:
         collegeFilter = or_(
             User.college == currentUser.college,
-            User.otherColleges.contains([User.college])
+            User.otherColleges.contains([currentUser.college])
         )
         availableQuery = availableQuery.filter(collegeFilter)
     else:

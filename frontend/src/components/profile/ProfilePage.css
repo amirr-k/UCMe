@@ -1,7 +1,7 @@
 .profile-container {
   min-height: calc(100vh - 64px);
   padding: 20px;
-  background: var(--uc-gradient-background);
+  background: #ffffff;
 }
 
 .profile-header {
