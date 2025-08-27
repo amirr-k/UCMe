@@ -1,11 +1,11 @@
-# UCMe – Matchmaking Application
+# UCMe
 
 A college-focused matchmaking app built with FastAPI (backend) and React (frontend).
 
 ## Project Structure
 
 ```
-UCMe-Matchmaking-Application/
+UCMe
 ├── backend/                     # FastAPI API
 │   ├── main.py                  # App bootstrap, CORS, static mounts (/uploads)
 │   ├── database.py              # SQLAlchemy engine/session (PostgreSQL required)
