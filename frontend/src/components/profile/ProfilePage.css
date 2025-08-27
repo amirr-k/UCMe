@@ -29,7 +29,7 @@
 .edit-button, .edit-preferences-button {
   padding: 10px 20px;
   border: none;
-  border-radius: 8px;
+  border-radius: 100px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -46,8 +46,8 @@
 }
 
 .edit-preferences-button {
-  background: white;
-  color: var(--uc-gold);
+  background: var(--uc-gold);
+  color: white;
   border: 2px solid var(--uc-gold);
 }
 

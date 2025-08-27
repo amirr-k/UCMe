@@ -1,101 +1,149 @@
-# UCMe
+# UCMe – Matchmaking Application
 
-A college-specific dating app built with FastAPI and PostgreSQL.
+A college-focused matchmaking app built with FastAPI (backend) and React (frontend).
 
 ## Project Structure
 
 ```
 UCMe-Matchmaking-Application/
-├── backend/                    # FastAPI backend
-│   ├── main.py                # FastAPI app entry point
-│   ├── database.py            # SQLAlchemy DB connection & session
-│   ├── models/
-│   │   └── user.py           # User SQLAlchemy model
-│   ├── schemas/
-│   │   └── user.py           # Pydantic request/response schemas
-│   ├── routes/
-│   │   ├── register.py       # User registration with email verification
-│   │   └── auth.py           # Authentication endpoints
-│   ├── utils/
-│   │   └── auth.py           # Email verification & magic codes
-│   ├── requirements.txt       # Python dependencies
-│   └── env.example           # Environment variables template
-├── .gitignore
-└── README.md
+├── backend/                     # FastAPI API
+│   ├── main.py                  # App bootstrap, CORS, static mounts (/uploads)
+│   ├── database.py              # SQLAlchemy engine/session (PostgreSQL required)
+│   ├── models/                  # SQLAlchemy models (User, Image, Swipe, Match, Message)
+│   ├── schemas/                 # Pydantic schemas (request/response)
+│   ├── routes/                  # API routes: auth, profile, images, interactions, recommendations, messages
+│   ├── utils/                   # JWT auth, email/Redis verification utils
+│   ├── uploads/                 # Image files stored locally and served at /uploads
+│   └── requirements.txt         # Backend dependencies
+└── frontend/                    # React app (Create React App)
+    ├── src/components/          # Pages & features
+    ├── src/services/            # API clients (axios)
+    ├── src/contexts/            # Auth context
+    └── package.json
 ```
 
-## Tech Stack
+## Prerequisites
 
-- **Backend**: FastAPI (Python)
-- **Database**: PostgreSQL + SQLAlchemy
-- **Email**: SMTP with magic code verification
-- **Cache**: Redis for verification codes
-- **Authentication**: Email verification system
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL (required – ARRAY columns are used)
+- (Optional) Redis for verification codes
+- (Optional) SMTP provider (SMTP2Go recommended) for email verification
 
-## Getting Started
+## Environment
 
-### Prerequisites
-- Python 3.8+
-- PostgreSQL database
-- Redis server (for verification codes)
-- SMTP email service (SMTP2Go recommended, Gmail, SendGrid, etc.)
+Create `backend/.env` using `backend/env.example` as a reference. Key variables:
 
-### 1. Setup Backend
+- DATABASE_URL: PostgreSQL URL (e.g. `postgresql://user:pass@localhost/ucme_db`)
+- SECRET_KEY: JWT signing key
+- CORS_ORIGINS: Comma-separated list, e.g. `http://localhost:3000`
+- SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD (optional)
+- REDIS_HOST, REDIS_PORT (optional)
 
-```bash
+Frontend expects the backend URL via `REACT_APP_API_URL` at build/runtime. For local dev:
+
+```
+# frontend/.env
+REACT_APP_API_URL=http://localhost:8000
+```
+
+## Install & Run
+
+### Backend
+
+```
 cd backend
 pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 2. Environment Setup
+API docs: `http://localhost:8000/docs`
 
-Copy `env.example` to `.env` and configure:
+### Frontend
 
-```bash
-# Database Configuration
-DATABASE_URL=postgresql://username:password@localhost/ucme
-
-# Email Configuration (for verification codes)
-# SMTP2Go (recommended):
-SMTP_HOST=mail.smtp2go.com
-SMTP_PORT=2525
-SMTP_USER=your-email@example.com
-SMTP_PASSWORD=your-api-key
-SMTP_TLS=true
-SMTP_SSL=false
-APP_NAME=UCMe
-
-# Redis Configuration (for storing verification codes)
-REDIS_HOST=localhost
-REDIS_PORT=6379
+```
+cd frontend
+npm install
+npm start
 ```
 
-### 3. Start Development Server
+App: `http://localhost:3000`
 
-```bash
-cd backend
-uvicorn main:app --reload
-```
+## Features
 
-### Email Setup with SMTP2Go
+- Authentication
+  - Email login with verification code (UC domains enforced)
+  - JWT stored in localStorage (dev)
+- Discover
+  - Swipe-like UI; like/pass via `/interactions`
+  - Card content scrolls for long bios/classes/interests
+- Matches
+  - Grid view of matched users
+  - Starts conversations from a match
+- Messaging
+  - Conversations list with unread counts
+  - Conversation detail with read receipts (opening marks as read)
+  - Bubble colors: sent (UC Blue, right), received (UC Gold, left)
+- Profile
+  - Edit profile and preferences
+  - Images: upload up to 3; set primary; remove image
+  - Primary image is shown across Discover/Matches/Messages
 
-For reliable email delivery, we recommend using SMTP2Go:
+## Images – How it works
 
-1. **Sign up** at [SMTP2Go.com](https://www.smtp2go.com/) (1000 emails/month free)
-2. **Get credentials** from Settings → API Keys
-3. **Configure** your `.env` file with SMTP2Go settings
-4. **Test** email sending with the provided test script
+- Uploads go to `backend/uploads/images` and are served at `/uploads` (mounted in `main.py`).
+- API routes (see `backend/routes/images.py`):
+  - `POST /images/upload` (multipart form: `file`, `isPrimary` bool) – max 3 images enforced.
+  - `PUT  /images/{imageId}/set-primary` – sets an image as primary (unsets others).
+  - `DELETE /images/{imageId}` – deletes an image (cannot delete the only primary if it’s the only image).
+- Frontend resolves relative `imageUrl` values by prefixing with `REACT_APP_API_URL`.
 
-See `backend/SMTP2GO_SETUP.md` for detailed configuration instructions.
+## API Overview 
 
-### Registration & Email Verification
-- `POST /auth/send-verification` - Send magic code to email
-- `POST /auth/verify-email` - Verify email with magic code
-- `POST /auth/register` - Complete user registration
-- `POST /auth/resend-email` - Resend verification code
+- Auth (`backend/routes/auth.py`)
+  - `POST /auth/login/sendVerification` – request code
+  - `POST /auth/login` – verify code, returns JWT
+  - `POST /auth/register` – registration (with verification)
+- Profile (`backend/routes/profile.py`)
+  - `GET  /profile/me` – current user (images eager-loaded)
+  - `PUT  /profile/update` – update profile
+  - `PUT  /profile/preferences` – update preferences
+  - `GET  /profile/viewProfile/{userId}` – view others (Approved only)
+- Images (`backend/routes/images.py`) – see section above
+- Interactions (`backend/routes/interactions.py`)
+  - `POST /interactions/like?targetId=` – like
+  - `POST /interactions/pass?targetId=` – pass
+  - `GET  /interactions/matches` – list matches
+- Recommendations (`backend/routes/recommendations.py`)
+  - `GET /recommendations/discover` – discover feed
+- Messages (`backend/routes/messages.py`)
+  - `GET  /messages/conversations` – list summaries (with unreadCount)
+  - `GET  /messages/conversations/{id}` – detail (messages + otherUser)
+  - `POST /messages/conversations` – create or return existing conversation
+  - `POST /messages/conversations/{id}/messages` – send message
+  - `PUT  /messages/conversations/{id}/read` – mark as read
 
-## Registration Flow
+## Backend Notes
 
-1. **Send Verification**: User provides UC email → Magic code sent
-2. **Verify Email**: User enters magic code → Email verified
-3. **Complete Registration**: User provides profile data → Account created
+- Database: `backend/database.py` enforces PostgreSQL URLs.
+- CORS: configured in `main.py` via `CORS_ORIGINS` (defaults include localhost:3000).
+- Static: `app.mount("/uploads", StaticFiles(directory="uploads"))` serves uploaded images.
+- JWT: utilities in `backend/utils/jwt_auth.py`.
+- Email/Redis: utilities in `backend/utils/auth.py`; app runs without SMTP/Redis (codes logged).
+
+## Frontend Notes
+
+- Auth context (`src/contexts/AuthContext.js`) loads the full profile on login/app start so name/id are available in the UI.
+- Services (`src/services/*`) use `REACT_APP_API_URL` and attach `Authorization: Bearer <token>`.
+- Messaging UI lives under `src/components/messaging/` and styles under `src/styles/messaging/`.
+
+
+
+## Scripts
+
+- Backend: `uvicorn main:app --reload`
+- Frontend: `npm start` (dev), `npm run build` (prod)
+
+## License
+
+For educational use. Not affiliated with the University of California in any way, developed as a fun project idea by Amir Kiadi

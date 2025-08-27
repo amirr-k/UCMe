@@ -1,16 +1,9 @@
 :root {
-  /* UC Official Colors */
-  --uc-blue: #005581;        /* UC Blue (Pantone 299 U) */
-  --uc-gold: #FFD200;        /* UC Gold (Pantone 116 U) */
-  
-  /* Secondary Colors */
-  --uc-blue-secondary: #1E3A8A;  /* Darker blue for gradients */
-  --uc-gold-secondary: #E6B800;  /* Darker gold for hover states */
-  
-  /* Neutral Colors */
+  --uc-blue: #005581;
+  --uc-gold: #FFD200;
   --uc-white: #FFFFFF;
   --uc-light-blue: #F0F8FF;
-  --uc-lighter-blue: #E6F3FF;
+  /* Grayscale palette adapted from Tailwind CSS default colors */
   --uc-gray-50: #F9FAFB;
   --uc-gray-100: #F3F4F6;
   --uc-gray-200: #E5E7EB;
@@ -20,28 +13,12 @@
   --uc-gray-600: #4B5563;
   --uc-gray-700: #374151;
   --uc-gray-800: #1F2937;
-  --uc-gray-900: #111827;
-  
-  /* Semantic Colors */
-  --uc-success: #10B981;
-  --uc-warning: #F59E0B;
-  --uc-error: #EF4444;
-  --uc-info: #3B82F6;
-  
-  /* Gradients */
-  --uc-gradient-primary: linear-gradient(135deg, var(--uc-blue) 0%, var(--uc-blue-secondary) 100%);
-  --uc-gradient-secondary: linear-gradient(135deg, var(--uc-gold) 0%, var(--uc-gold-secondary) 100%);
-  --uc-gradient-background: linear-gradient(135deg, var(--uc-light-blue) 0%, var(--uc-lighter-blue) 100%);
-  
-  /* Shadows */
+  --uc-gradient-primary: linear-gradient(135deg, var(--uc-blue) 0%, #1E3A8A 100%);
+  /* Shadow tokens adapted from Tailwind default + blue*/
   --uc-shadow-sm: 0 1px 2px 0 rgba(0, 85, 129, 0.05);
   --uc-shadow-md: 0 4px 6px -1px rgba(0, 85, 129, 0.1);
   --uc-shadow-lg: 0 10px 15px -3px rgba(0, 85, 129, 0.1);
   --uc-shadow-xl: 0 20px 25px -5px rgba(0, 85, 129, 0.1);
   --uc-shadow-blue: 0 8px 25px rgba(0, 85, 129, 0.3);
-  --uc-shadow-gold: 0 8px 25px rgba(255, 210, 0, 0.3);
-  
-  /* Focus States */
   --uc-focus-ring: 0 0 0 3px rgba(0, 85, 129, 0.1);
-  --uc-focus-ring-gold: 0 0 0 3px rgba(255, 210, 0, 0.1);
 } 
