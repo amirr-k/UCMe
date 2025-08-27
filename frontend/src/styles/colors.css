@@ -14,7 +14,12 @@
   --uc-gray-700: #374151;
   --uc-gray-800: #1F2937;
   --uc-gradient-primary: linear-gradient(135deg, var(--uc-blue) 0%, #1E3A8A 100%);
-  /* Shadow tokens adapted from Tailwind default + blue*/
+  /* UC gray scale, adapted from Tailwind CSS, used in the following manner:
+    - 50: backgrounds
+    - 200: borders/inputs
+    - 500: subtle text
+    - 800: primary text
+  */
   --uc-shadow-sm: 0 1px 2px 0 rgba(0, 85, 129, 0.05);
   --uc-shadow-md: 0 4px 6px -1px rgba(0, 85, 129, 0.1);
   --uc-shadow-lg: 0 10px 15px -3px rgba(0, 85, 129, 0.1);
